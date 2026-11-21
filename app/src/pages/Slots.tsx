@@ -1,3 +1,4 @@
+import { GamingoFreePlay } from '../components/GamingoFreePlay';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { getToken, money } from '../lib/api';
 import { useApp } from '../lib/store';
@@ -188,6 +189,8 @@ export function Slots() {
         <h1 className="page-title">Slots</h1>
         <p className="page-sub">{games.length ? `${games.length} DanGG Originals · play-money only` : 'DanGG Originals · play-money only'}</p>
         <AgeNotice />
+
+        {user && <GamingoFreePlay key={user.id} />}
 
         <nav className="slots-chips" aria-label="Slot categories">
           {SLOT_CATEGORIES.map((c) => (
