@@ -27,3 +27,10 @@ fun-mode request in provider-held G, and accepts only a fun/G launch on the
 Gamingo games origin. Demo credits never enter DanGG balances. No launch token
 is persisted by the integration. There are no real-money launches or wallet
 callbacks.
+
+A platform operator can also publish free demos independently of the organizer.
+Set GAMINGO_PLATFORM_DEMO_OWNER to the exact assigned organizer ID to opt in at
+deployment, or choose the Gamingo checkbox under Admin → Game settings and save.
+An explicit admin setting overrides the deployment default. Either publication
+requires the assigned organizer's active membership and sandbox jurisdiction.
+This does not grant administrator rights or record consent on the organizer's behalf.

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 const ROOT = '/api/marketplace/gamingo';
 
-export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, funProvider, funJurisdiction, getSetting, setSetting, requireUser, readBody, json }) {
+export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, platformDemoOwner, funProvider, funJurisdiction, getSetting, setSetting, requireUser, readBody, json }) {
   return async (req, res, url) => {
     const path = url.pathname;
     if (path !== ROOT && !path.startsWith(`${ROOT}/`)) return false;
@@ -15,7 +15,9 @@ export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, fu
         const owner = Number(catalogOwner), mine = String(user.id) === catalogOwner;
         const key = 'gamingo_fun_installed_' + owner;
         const ready = !!funJurisdiction && Number.isSafeInteger(owner) && owner > 0 && gamingo.readiness(owner).organizer_membership_active;
-        const installed = ready && getSetting(key, false) === true;
+        const organizerInstalled = ready && getSetting(key, false) === true;
+        const platformPublished = ready && getSetting('gamingo_platform_demo_' + owner, platformDemoOwner === catalogOwner) === true;
+        const installed = organizerInstalled || platformPublished;
         if (path.endsWith('/launch') && req.method === 'POST' && installed) {
           const body = await readBody(req);
           if (!body || Object.keys(body).length !== 1 || typeof body.gameId !== 'string') { json(res,400,{error:'Expected a gameId only.'}); return true; }
@@ -29,7 +31,7 @@ export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, fu
         if (path.endsWith('/free-play') && req.method === 'GET') {
           const games = installed ? (await funProvider().games(funJurisdiction)).games.filter(g => g.enabled === true && g.maintenance === false)
             .map(g => ({id:g.game_id,title:g.title})) : [];
-          json(res,200,{ installed, canManage:mine && ready, games }); return true;
+          json(res,200,{ installed, organizerInstalled, platformPublished, canManage:mine && ready, games }); return true;
         }
         json(res,403,{error:'Free Play Money preview is unavailable.'}); return true;
       }

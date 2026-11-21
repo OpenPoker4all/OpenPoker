@@ -30,3 +30,21 @@ test('organizer installs for all players; only fun sessions are signed; expiry a
   member=true;assert.equal(await req(46,'PUT',{installed:false}),200);assert.equal(await req(12,'POST',{gameId:'example'},'/launch'),403);
   assert.equal(calls.length,n);
 });
+
+test('platform publication is bound to the configured organizer, separate from organizer opt-in and restricted to active sandbox membership', async()=>{
+  const settings=new Map();let member=true;
+  const read=async(sponsor,jur='intl')=>{
+    let result;
+    const handler=createGamingoRoutes({catalogOwner:'46',platformDemoOwner:sponsor,funJurisdiction:jur,
+      getSetting:(k,fallback)=>settings.get(k)??fallback,requireUser:()=>({id:12}),
+      gamingo:{readiness:()=>({organizer_membership_active:member})},
+      funProvider:()=>({games:async()=>({games:[{game_id:'x',title:'X',enabled:true,maintenance:false}]})}),
+      json:(_,s,d)=>{assert.equal(s,200);result=d}});
+    await handler({method:'GET'},{setHeader(){}},new URL('https://local/api/marketplace/gamingo/free-play'));return result;
+  };
+  assert.equal((await read('99')).installed,false);
+  const d=await read('46');assert.equal(d.installed,true);assert.equal(d.organizerInstalled,false);assert.equal(d.canManage,false);
+  assert.equal((await read('46','')).installed,false);
+  member=false;assert.equal((await read('46')).installed,false);member=true;
+  settings.set('gamingo_platform_demo_46',false);assert.equal((await read('46')).installed,false);
+});

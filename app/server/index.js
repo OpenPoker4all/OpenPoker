@@ -714,7 +714,7 @@ const funProvider = () => createGamingoFunProvider({ operatorId: process.env.GAM
   secret: process.env.GAMINGO_KEY_SECRET, aggregatorId: process.env.GAMINGO_AGGREGATOR_ID });
 const handleGamingoRoute = createGamingoRoutes({ gamingo, requireUser, readBody, json,
   catalogOwner: process.env.GAMINGO_CATALOG_ORGANIZER_ID,
-  funJurisdiction: process.env.GAMINGO_FUN_JURISDICTION, getSetting, setSetting, funProvider,
+  platformDemoOwner: process.env.GAMINGO_PLATFORM_DEMO_OWNER, funJurisdiction: process.env.GAMINGO_FUN_JURISDICTION, getSetting, setSetting, funProvider,
   catalogProvider: () => createGamingoSandboxProvider({ operatorId: process.env.GAMINGO_OPERATOR_ID,
     keyId: process.env.GAMINGO_KEY_ID, secret: process.env.GAMINGO_KEY_SECRET, aggregatorId: process.env.GAMINGO_AGGREGATOR_ID }),
 });
@@ -3527,6 +3527,11 @@ const server = http.createServer(async (req, res) => {
       const rows = db.prepare('SELECT * FROM settings').all();
       const out = {};
       for (const r of rows) { try { out[r.key] = JSON.parse(r.value); } catch { out[r.key] = r.value; } }
+      // Only expose the configured organizer's sandbox switch on the operator listener.
+      const owner = process.env.GAMINGO_CATALOG_ORGANIZER_ID;
+      if (process.env.GAMINGO_FUN_JURISDICTION && /^[1-9][0-9]*$/.test(owner || '')) {
+        out['gamingo_platform_demo_' + owner] ??= process.env.GAMINGO_PLATFORM_DEMO_OWNER === owner;
+      }
       const cashDrop = readCashDropConfig(getSetting);
       out[CASHDROP_SETTING_KEYS.rate] ??= cashDrop.rate;
       out[CASHDROP_SETTING_KEYS.amountBb] ??= cashDrop.amountBb;

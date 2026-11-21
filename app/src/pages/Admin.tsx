@@ -771,7 +771,9 @@ export function Admin() {
               <h2 className="admin-title">Game settings</h2>
               <div className="admin-card">
                 <div className="admin-form">
-                  {Object.entries(settings).filter(([k]) => !CASHDROP_KEYS.includes(k)).map(([k, v]) => (
+                  {Object.keys(settings).filter(k => /^gamingo_platform_demo_[1-9][0-9]*$/.test(k)).map(k =>
+                    <label key={k}><input type="checkbox" checked={settings[k] === true} onChange={e => setSettings({ ...settings, [k]: e.target.checked })} /> Publish Gamingo free Play Money demos for everyone (organizer {k.split('_').at(-1)})</label>)}
+                  {Object.entries(settings).filter(([k]) => !k.startsWith('gamingo_platform_demo_') && !CASHDROP_KEYS.includes(k)).map(([k, v]) => (
                     <Field key={k} label={k}>
                       <input
                         className="admin-input" style={{ width: '100%' }}
