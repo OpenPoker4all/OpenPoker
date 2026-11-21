@@ -4,9 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 
-// puppeteer-core is an app dev dependency; resolve it from app/ since tools/ has no node_modules.
+// puppeteer-core is an app dev dependency; resolve it from app/ (or PUPPETEER_CORE_PATH when run standalone).
 const appRequire = createRequire(new URL('../../app/package.json', import.meta.url));
-const puppeteer = appRequire('puppeteer-core');
+const puppeteer = process.env.PUPPETEER_CORE_PATH
+  ? appRequire(process.env.PUPPETEER_CORE_PATH)
+  : appRequire('puppeteer-core');
 
 const CHROME = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 export const OUT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../app/public/assets');
@@ -27,14 +29,32 @@ const browser = () => (browserPromise ??= puppeteer.launch({ executablePath: CHR
  * (or to relPath itself when it is absolute).
  * The page background is transparent unless the HTML paints one.
  */
-export async function renderPng(relPath, html, width, height) {
+export async function renderPng(relPath, html, width, height, { opaque = false } = {}) {
   const page = await (await browser()).newPage();
   try {
     await page.setViewport({ width, height, deviceScaleFactor: 1 });
     await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:${width}px;height:${height}px;overflow:hidden;background:transparent}</style></head><body>${html}</body></html>`, { waitUntil: 'load' });
     const file = path.isAbsolute(relPath) ? relPath : path.join(OUT, relPath);
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    await page.screenshot({ path: file, omitBackground: true, clip: { x: 0, y: 0, width, height } });
+    await page.screenshot({ path: file, type: 'png', omitBackground: !opaque, clip: { x: 0, y: 0, width, height } });
+    return file;
+  } finally {
+    await page.close();
+  }
+}
+
+/**
+ * Render `html` at exactly width×height and write a WebP to OUT/relPath
+ * (or to relPath itself when it is absolute). Preserves full alpha when `opaque` is false.
+ */
+export async function renderWebp(relPath, html, width, height, { quality = 92, opaque = false } = {}) {
+  const page = await (await browser()).newPage();
+  try {
+    await page.setViewport({ width, height, deviceScaleFactor: 1 });
+    await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:${width}px;height:${height}px;overflow:hidden;background:transparent}</style></head><body>${html}</body></html>`, { waitUntil: 'load' });
+    const file = path.isAbsolute(relPath) ? relPath : path.join(OUT, relPath);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    await page.screenshot({ path: file, type: 'webp', quality, omitBackground: !opaque, clip: { x: 0, y: 0, width, height } });
     return file;
   } finally {
     await page.close();
