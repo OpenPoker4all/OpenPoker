@@ -61,7 +61,7 @@ export const HTML_CSP = [
   // Ruffle compiles its self-hosted WebAssembly; no eval or remote script is allowed.
   "script-src 'self' 'wasm-unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://games.gamingo.partners/img/",
   "media-src 'self' data: blob:",
   "font-src 'self' data:",
   process.env.NODE_ENV === 'production' ? "connect-src 'self'" : "connect-src 'self' ws://127.0.0.1:* ws://localhost:*",

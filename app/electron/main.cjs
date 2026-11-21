@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, shell, dialog, session } = require('electron');
+const { app, BrowserWindow, WebContentsView, ipcMain, Menu, shell, dialog, session } = require('electron');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');
@@ -180,7 +180,31 @@ ipcMain.handle('win:isMaximized', (event) => senderWindow(event)?.isMaximized() 
 
 // The app only ever shows its own local server: block navigation anywhere else and deny
 // every permission request (camera, microphone, notifications…).
+const gamePartition='gamingo-fun';
+const approvedGameOrigin=u=>{try{const v=new NodeURL(u);return v.origin==='https://games.gamingo.partners'&&!v.username&&!v.password;}catch{return false;}};
+let gameView=null;
+function resizeGame(){if(!gameView||!win||win.isDestroyed())return;const [width,height]=win.getContentSize();gameView.setBounds({x:0,y:80,width,height:Math.max(1,height-80)});}
+function closeGame(){if(!gameView)return;const view=gameView;gameView=null;if(win&&!win.isDestroyed()){win.removeListener('resize',resizeGame);win.contentView.removeChildView(view);}
+ if(!view.webContents.isDestroyed())view.webContents.close();}
+const trustedLobby=event=>win && !win.isDestroyed() && event.sender===win.webContents && event.senderFrame===event.sender.mainFrame && isAllowedAppUrl(event.senderFrame.url,URL);
+ipcMain.handle('gamingo:close',event=>{if(trustedLobby(event))closeGame();});
+ipcMain.handle('gamingo:open',async(event,target)=>{
+ if(!trustedLobby(event)||!approvedGameOrigin(target)||!new NodeURL(target).pathname.startsWith('/play/'))throw Error('Unsupported game launch.');
+ closeGame();
+ const view=new WebContentsView({webPreferences:{partition:gamePartition,sandbox:true,contextIsolation:true,nodeIntegration:false}});
+ gameView=view;win.contentView.addChildView(view);resizeGame();win.on('resize',resizeGame);
+ try{await view.webContents.loadURL(target);}catch{if(gameView===view){closeGame();throw Error('Could not open the game.');}}
+});
+app.on('before-quit',closeGame);
 app.on('web-contents-created', (_event, contents) => {
+  if(contents.session===session.fromPartition(gamePartition)){
+    contents.setWindowOpenHandler(()=>({action:'deny'}));
+    contents.session.setPermissionRequestHandler((_w,_p,cb)=>cb(false));
+    contents.session.setPermissionCheckHandler(()=>false);
+    contents.on('will-navigate',(event,target)=>{if(!approvedGameOrigin(target))event.preventDefault();});
+    contents.on('will-redirect',event=>{if(!approvedGameOrigin(event.url))event.preventDefault();});
+    return;
+  }
   contents.setWindowOpenHandler(({ url }) => {
     if (isAllowedAppUrl(url, URL)) {
       return {
