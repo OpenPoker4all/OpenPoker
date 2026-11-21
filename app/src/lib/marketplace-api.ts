@@ -126,6 +126,9 @@ async function request<T>(path: string, method = 'GET', body?: unknown): Promise
 const ADMIN = '/api/admin/marketplace';
 
 export const marketplaceApi = {
+  freeGamingo: () => request<{ installed: boolean; canManage: boolean; games: {id:string;title:string}[] }>('/api/marketplace/gamingo/free-play'),
+  installGamingo: (installed:boolean) => request('/api/marketplace/gamingo/free-play','PUT',{installed}),
+  playGamingo: (gameId:string) => request<{url:string}>('/api/marketplace/gamingo/free-play/launch','POST',{gameId}),
   gamingoCatalog: () => request<{ games: { id: string; title: string; available: boolean }[] }>('/api/marketplace/gamingo/catalog'),
   contributors: () => request<{ contributors: PublicContributor[] }>('/api/marketplace/contributors'),
   catalog: () => request<MarketplaceCatalog>('/api/marketplace'),

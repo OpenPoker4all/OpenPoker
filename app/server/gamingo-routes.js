@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 const ROOT = '/api/marketplace/gamingo';
 
-export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, requireUser, readBody, json }) {
+export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, funProvider, funJurisdiction, getSetting, setSetting, requireUser, readBody, json }) {
   return async (req, res, url) => {
     const path = url.pathname;
     if (path !== ROOT && !path.startsWith(`${ROOT}/`)) return false;
@@ -10,6 +10,29 @@ export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, re
         json(res, 200, gamingo.model()); return true;
       }
       const user = requireUser(req, res); if (!user) return true;
+      if (path === `${ROOT}/free-play` || path === `${ROOT}/free-play/launch`) {
+        res.setHeader('Cache-Control', 'private, no-store');
+        const owner = Number(catalogOwner), mine = String(user.id) === catalogOwner;
+        const key = 'gamingo_fun_installed_' + owner;
+        const ready = !!funJurisdiction && Number.isSafeInteger(owner) && owner > 0 && gamingo.readiness(owner).organizer_membership_active;
+        const installed = ready && getSetting(key, false) === true;
+        if (path.endsWith('/launch') && req.method === 'POST' && installed) {
+          const body = await readBody(req);
+          if (!body || Object.keys(body).length !== 1 || typeof body.gameId !== 'string') { json(res,400,{error:'Expected a gameId only.'}); return true; }
+          json(res,200,await funProvider().play(body.gameId, 'play-' + user.id, funJurisdiction)); return true;
+        }
+        if (path.endsWith('/free-play') && req.method === 'PUT' && mine && ready) {
+          const body = await readBody(req);
+          if (typeof body?.installed !== 'boolean') { json(res,400,{error:'Expected installed flag.'}); return true; }
+          setSetting(key,body.installed); json(res,200,{ installed:body.installed }); return true;
+        }
+        if (path.endsWith('/free-play') && req.method === 'GET') {
+          const games = installed ? (await funProvider().games(funJurisdiction)).games.filter(g => g.enabled === true && g.maintenance === false)
+            .map(g => ({id:g.game_id,title:g.title})) : [];
+          json(res,200,{ installed, canManage:mine && ready, games }); return true;
+        }
+        json(res,403,{error:'Free Play Money preview is unavailable.'}); return true;
+      }
       if (path === `${ROOT}/catalog`) {
         res.setHeader('Cache-Control', 'private, no-store');
         if (req.method !== 'GET') { json(res, 405, { error: 'Catalog is read-only.' }); return true; }

@@ -1,3 +1,4 @@
+import { GamingoFreePlay } from '../components/GamingoFreePlay';
 import React, { FormEvent, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useApp } from '../lib/store';
 import {
@@ -380,7 +381,7 @@ export function Marketplace() {
             <h3>Organizer connection setup</h3>
             <p>Free previews need a Gamingo sandbox test operator with at least one assigned game. Players do not buy this plugin.</p>
             <p><strong>Wallet connection: unavailable.</strong> DanGG does not yet provide the balance, debit, credit and rollback callbacks. Leave the Gamingo connection form unsaved until your tested wallet URL is available.</p>
-            {user && <GamingoCatalog key={user.id} />}
+            {user && <><GamingoCatalog key={user.id} /><GamingoFreePlay key={'install-' + user.id} manage /></>}
           </section>}
           {selected.features.length > 0 && <ul className="mp-feature-list">{selected.features.map((feature, i) => <li key={`${feature}-${i}`}><Icon name="check" /><span>{feature}</span></li>)}</ul>}
           <div className="mp-delivery-explanation"><Icon name="shield" /><p>{selected.delivery === 'hosted_service' ? 'A service provided by DanGG under the confirmed offer. Service access is separate from the right to install the Community edition.' : selected.delivery === 'open_source_extension' ? 'An open-source extension. The applicable license and installation instructions are provided before delivery; payment does not remove the rights granted by the license.' : 'A commercial module. Licensing terms, compatibility, and delivery are confirmed before any purchase.'}</p></div>

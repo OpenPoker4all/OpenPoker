@@ -1,3 +1,4 @@
+import { GamingoFreePlay } from '../components/GamingoFreePlay';
 import React, { useEffect, useRef, useState } from 'react';
 import { api, getToken, money } from '../lib/api';
 import { useApp } from '../lib/store';
@@ -384,7 +385,7 @@ const HUB_SLIDES = [
 const KIND_LABEL: Record<string, string> = { slots: 'Slots', roulette: 'Roulette', crash_win: 'Crash', blackjack: 'Blackjack' };
 
 export function Casino() {
-  const { navigate, route } = useApp();
+  const { navigate, route, user } = useApp();
   const isPhone = useIsPhone();
   const [tab, setTab] = useState(() => casinoTabFromRoute(route));
   const [category, setCategory] = useState('all');
@@ -407,7 +408,7 @@ export function Casino() {
   if (tab === 'baccarat') return <Baccarat onTab={setTab} />;
   if (tab === 'dragontiger') return <DragonTiger onTab={setTab} />;
   if (tab === 'sicbo') return <SicBo onTab={setTab} />;
-  if (isPhone) return <MobileShell showBrand><MobileCasino /></MobileShell>;
+  if (isPhone) return <MobileShell showBrand>{user && <GamingoFreePlay key={user.id} />}<MobileCasino /></MobileShell>;
 
   const shown = category === 'all' ? HUB_GAMES : HUB_GAMES.filter((g) => g.tags.includes(category));
   const go = (target?: string, nextTab?: string) => {
@@ -418,6 +419,7 @@ export function Casino() {
   return (
     <PageShell activeTop="casino">
       <div className="page">
+        {user && <GamingoFreePlay key={user.id} />}
         <div className="casino-hero" aria-roledescription="carousel" aria-label="Casino highlights">
           {HUB_SLIDES.map((s, i) => (
             <div key={s.key} className={'casino-hero-slide' + (i === slide ? ' on' : '')} style={{ ['--accent' as any]: s.accent }} aria-hidden={i !== slide}>
