@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Gamingo OpenAPI 1.11.0 and /docs signing guide, checked 2026-11-20.
-// Sandbox-only client. It exposes no real-money/transfer/wallet operation.
+// Separate catalog-only and fun-mode clients; neither exposes wallet operations.
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 
 const ORIGIN = 'https://rgs.gamingo.partners';
@@ -25,7 +25,7 @@ export function gamingoSignature({ secret, method, path, timestamp, nonce, body 
   return createHmac('sha256', key).update(['RGS-HMAC-SHA256', method, path, String(timestamp), nonce, digest].join('\n')).digest('hex');
 }
 
-export function createGamingoSandboxProvider({ operatorId, keyId, secret, aggregatorId,
+function provider({ operatorId, keyId, secret, aggregatorId,
   fetchImpl = fetch, now = Date.now, nonce = () => randomBytes(24).toString('hex') }) {
   operatorId = id(operatorId);
   keyId = text(keyId, /^(key|agk)_[a-f0-9]{16}$/, 'key ID');
@@ -33,14 +33,14 @@ export function createGamingoSandboxProvider({ operatorId, keyId, secret, aggreg
   if (keyId.startsWith('agk_') !== (aggregatorId != null)) fail('Aggregator credentials must name their aggregator.', 400, 'gamingo_invalid');
   if (typeof secret !== 'string' || !secret || secret.length > 4096) fail('Gamingo server-side secret required.', 400, 'gamingo_invalid');
 
-  async function request(path) {
-    const method = 'GET', body = '';
+  async function request(path, payload) {
+    const method = payload ? 'POST' : 'GET', body = payload ? JSON.stringify(payload) : '';
     const timestamp = String(Math.floor(now() / 1000)), requestNonce = nonce();
     const signature = gamingoSignature({ secret, method, path, timestamp, nonce: requestNonce, body });
     let response, data;
     try {
       response = await fetchImpl(ORIGIN + path, { method, redirect: 'error', signal: AbortSignal.timeout(10000),
-        headers: { 'X-Operator-Id': operatorId, 'X-Key-Id': keyId, 'X-Timestamp': timestamp,
+        body: payload ? body : undefined, headers: { ...(payload ? { 'Content-Type': 'application/json' } : {}), 'X-Operator-Id': operatorId, 'X-Key-Id': keyId, 'X-Timestamp': timestamp,
           'X-Nonce': requestNonce, 'X-Signature': signature,
           ...(aggregatorId == null ? {} : { 'X-Aggregator-Id': aggregatorId }),
         },
@@ -63,5 +63,20 @@ export function createGamingoSandboxProvider({ operatorId, keyId, secret, aggreg
     return result;
   }
 
-  return { games };
+  async function play(gameId, playerId, jurisdiction) {
+    id(gameId); id(playerId);
+    if (!jurisdiction) fail('Sandbox jurisdiction required.');
+    const list = await games(jurisdiction);
+    if (!list.games.some(g => g.game_id === gameId && g.enabled === true && g.maintenance === false)) fail('Game unavailable.', 404);
+    const session = await request('/b2b/v1/sessions', { player_id: playerId, game_id: gameId, jurisdiction, mode: 'fun', currency: 'G' });
+    let url;
+    try { url = new URL(session.launch_url); } catch { fail('Invalid sandbox launch response.'); }
+    if (session.mode !== 'fun' || session.currency !== 'G' || url.origin !== 'https://games.gamingo.partners' || url.username || url.password
+        || !url.pathname.startsWith('/play/')) fail('Invalid sandbox launch response.');
+    return { url: url.href };
+  }
+  return { games, play };
 }
+
+export function createGamingoSandboxProvider(config) { return { games: provider(config).games }; }
+export function createGamingoFunProvider(config) { return provider(config); }

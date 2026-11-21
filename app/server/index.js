@@ -78,7 +78,7 @@ import { createContributorSubmissions, createContributorRoutes } from './contrib
 import { previewRake } from './rake-lab.js';
 import { createManagementPolicy, privateSpinConfig, tableManagementProduct } from './management-plugins.js';
 import { createGamingo } from './gamingo.js';
-import { createGamingoSandboxProvider } from './gamingo-provider.js';
+import { createGamingoSandboxProvider, createGamingoFunProvider } from './gamingo-provider.js';
 import { createGamingoRoutes } from './gamingo-routes.js';
 import { createManagementRoutes } from './management-routes.js';
 import { createOrganizerBilling } from './organizer-billing.js';
@@ -710,8 +710,11 @@ const managementPolicy = usageBilling ? {
 const handleManagementRoute = createManagementRoutes({ db, commerce: marketplaceCommerce, policy: managementPolicy, billing: organizerBilling, json, requireUser, requireAdmin, readBody });
 const gamingo = createGamingo({ db, billing: organizerBilling, commerce: marketplaceCommerce,
   connections: process.env.GGPOKER_GAMINGO_CONNECTIONS || '{}' });
+const funProvider = () => createGamingoFunProvider({ operatorId: process.env.GAMINGO_OPERATOR_ID, keyId: process.env.GAMINGO_KEY_ID,
+  secret: process.env.GAMINGO_KEY_SECRET, aggregatorId: process.env.GAMINGO_AGGREGATOR_ID });
 const handleGamingoRoute = createGamingoRoutes({ gamingo, requireUser, readBody, json,
   catalogOwner: process.env.GAMINGO_CATALOG_ORGANIZER_ID,
+  funJurisdiction: process.env.GAMINGO_FUN_JURISDICTION, getSetting, setSetting, funProvider,
   catalogProvider: () => createGamingoSandboxProvider({ operatorId: process.env.GAMINGO_OPERATOR_ID,
     keyId: process.env.GAMINGO_KEY_ID, secret: process.env.GAMINGO_KEY_SECRET, aggregatorId: process.env.GAMINGO_AGGREGATOR_ID }),
 });

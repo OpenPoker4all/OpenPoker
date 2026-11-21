@@ -8,7 +8,22 @@ GAMINGO_AGGREGATOR_ID. Never put credentials in the client build.
 The catalog requires an authenticated session and a current organizer membership.
 Only the matching user can trigger a signed GET to the supplier. The response must
 identify a sandbox test operator. The browser receives IDs, titles and availability.
-No launch, wallet operation, checkout or balance transfer is enabled.
+No launch is enabled by default. Wallet operations, checkout and balance transfers are unavailable.
 
 For a read-only CLI check, also set GAMINGO_JURISDICTION and run
 `node tools/gamingo-sandbox.mjs` from app/.
+
+## Optional free Play Money demos
+
+By default only the organizer catalog is available. To offer free demos on a
+host approved for sandbox play, configure GAMINGO_FUN_JURISDICTION to an assigned
+sandbox jurisdiction. The assigned active organizer can then choose **Add to Play
+Money for everyone** in Marketplace → Gamingo Casino Manager. Every signed-in
+player can open Casino and choose a game without buying a plugin or joining a
+paid club. Removing the plugin or losing membership blocks new sessions.
+
+Each launch checks the assigned sandbox games and maintenance flags, signs a
+fun-mode request in provider-held G, and accepts only a fun/G launch on the
+Gamingo games origin. Demo credits never enter DanGG balances. No launch token
+is persisted by the integration. There are no real-money launches or wallet
+callbacks.
