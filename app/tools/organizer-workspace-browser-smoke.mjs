@@ -24,6 +24,8 @@ try {
  await page.evaluateOnNewDocument(token=>{localStorage.setItem('ggpoker.token',token);sessionStorage.setItem('ggpoker.entered','1');localStorage.setItem('ggpoker.welcomeSeen','1');},owner.token);
  await page.setViewport({width:1280,height:950});
  await page.goto(sandbox.url+'/#/organiser');await page.waitForSelector('.ls-content:not([inert])');await page.waitForSelector('.ls',{hidden:true});
+ const backdrop=await page.$eval('.platform-workspace',e=>[getComputedStyle(e).backgroundColor,getComputedStyle(e).backgroundImage]);
+ assert.deepEqual(backdrop,['rgb(0, 0, 0)','none'],'Organizer canvas must stay black');
  const tabs=['club-overview','how-it-works','transfers','nervixpay','management','my-tables','my-casino'];
  assert.equal(await page.$$eval('.ow-tabs a',ns=>ns.length),7);
  const select=async tab=>{await page.locator(`.ow-tabs a[href="#/organiser?tab=${tab}"]`).click();await page.waitForFunction(tab=>document.querySelector('.ow-tabs a[aria-current]')?.getAttribute('href')===`#/organiser?tab=${tab}`,{},tab);await new Promise(r=>setTimeout(r,180));};

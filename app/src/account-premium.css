@@ -173,3 +173,9 @@
 :is(.funding-panel,.cashout-panel) .mp-button { white-space: normal; min-height: 44px; }
 .org-modal :is(.funding-panel,.cashout-panel) .mp-account-list p { font-size: 14px; line-height: 1.6; color: var(--account-muted); }
 .session-credit-panel { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--account-line,#4c4436); }
+
+/* DanGG club workspace uses a true black canvas. Keep gold on controls and labels. */
+.platform-workspace[data-workspace="organiser"] { background: #000; }
+.platform-workspace[data-workspace="organiser"] :is(.club-shelf,.ow-card,.mp-account-panel,.ow-tabs) { background: #101010; border-color:#353535; }
+.platform-workspace[data-workspace="organiser"] .club-shelf li { background-color:#171717; }
+.platform-workspace[data-workspace="organiser"] .club-payments header { background: #101010; }
