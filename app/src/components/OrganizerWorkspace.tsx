@@ -7,7 +7,10 @@ import { OrganizerChips } from './OrganizerChips';
 import { OrganizerClubHome } from './OrganizerClubHome';
 import '../organizer-workspace.css';
 
+import {ClubLibrary,ClubPayments,ClubServices} from './ClubLibrary';
+
 const TABS = [
+  ['club-overview','Club overview','Review plugin payments and see the collection your approved members see.'],
   ['how-it-works', 'How it works', 'A clear path from your first setup to your first game.'],
   ['transfers', 'Transfers', 'Send Cash Chips and tickets within the right organizer economy.'],
   ['nervixpay', 'NervixPay', 'Fund platform services and keep track of your payment receipts.'],
@@ -20,7 +23,7 @@ type Tab = typeof TABS[number][0];
 export function OrganizerWorkspace({ userId }: { userId: number }) {
   const { route, navigate } = useApp();
   const requested = new URLSearchParams(route.split('?')[1]).get('tab');
-  const tab: Tab = TABS.find(([key]) => key === requested)?.[0] || 'how-it-works';
+  const tab: Tab = TABS.find(([key]) => key === requested)?.[0] || 'club-overview';
   const [visited, setVisited] = useState<Set<Tab>>(() => new Set([tab]));
   useEffect(() => { setVisited(current => new Set([...current, tab])); }, [tab]);
   const go = (next: Tab) => navigate(`/organiser?tab=${next}`);
@@ -30,6 +33,7 @@ export function OrganizerWorkspace({ userId }: { userId: number }) {
   return <section className="ow-workspace" aria-label="Organizer workspace">
     <nav className="ow-tabs" aria-label="Organizer sections">{TABS.map(([key, label]) => <a key={key} href={`#/organiser?tab=${key}`} aria-current={tab === key ? 'page' : undefined}>{label}</a>)}</nav>
     <header className="ow-heading"><span>YOUR ORGANIZER WORKSPACE</span><h2>{selected[1]}</h2><p>{selected[2]}</p></header>
+    {tab === 'club-overview' && <><ClubPayments key={userId}/><ClubServices key={'services-'+userId}/><ClubLibrary key={'club-'+userId} owner={userId}/><div className="ow-actions"><button onClick={()=>go('my-casino')}>Manage members</button><button onClick={()=>go('nervixpay')}>Service credit history</button></div></>}
     {tab === 'how-it-works' && <>
       <section className="ow-card ow-welcome"><span className="ow-kicker">START HERE</span><h3>A home for your players. You stay in control.</h3><p>You can explore every section before becoming an organizer. Browsing this workspace does not buy a membership, start a table or spend credits.</p><button onClick={() => go('management')}>Set up my Organizer account →</button></section>
       <div className="ow-grid" aria-label="Understand your balances">

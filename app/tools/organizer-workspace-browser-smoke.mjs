@@ -24,8 +24,8 @@ try {
  await page.evaluateOnNewDocument(token=>{localStorage.setItem('ggpoker.token',token);sessionStorage.setItem('ggpoker.entered','1');localStorage.setItem('ggpoker.welcomeSeen','1');},owner.token);
  await page.setViewport({width:1280,height:950});
  await page.goto(sandbox.url+'/#/organiser');await page.waitForSelector('.ls-content:not([inert])');await page.waitForSelector('.ls',{hidden:true});
- const tabs=['how-it-works','transfers','nervixpay','management','my-tables','my-casino'];
- assert.equal(await page.$$eval('.ow-tabs a',ns=>ns.length),6);
+ const tabs=['club-overview','how-it-works','transfers','nervixpay','management','my-tables','my-casino'];
+ assert.equal(await page.$$eval('.ow-tabs a',ns=>ns.length),7);
  const select=async tab=>{await page.locator(`.ow-tabs a[href="#/organiser?tab=${tab}"]`).click();await page.waitForFunction(tab=>document.querySelector('.ow-tabs a[aria-current]')?.getAttribute('href')===`#/organiser?tab=${tab}`,{},tab);await new Promise(r=>setTimeout(r,180));};
  for(const width of [1280,390,320]) {
   await page.setViewport({width,height:950});
@@ -76,6 +76,28 @@ try {
  await page.click('.ow-section-top button');await page.waitForFunction(()=>document.querySelector('.ow-members')?.textContent.includes('Future member'));
  page.on('dialog',d=>d.accept());await page.click('.ow-members button');await page.waitForFunction(()=>document.querySelector('.ow-members')?.textContent.includes('approved'));
  assert.equal((await request(`/api/organizers/${owner.user.id}`,member.token)).membershipStatus,'approved');
+ const fixture=new DatabaseSync(path.join(sandbox.directory,'data','ggpoker.db'));
+ const product=fixture.prepare("SELECT id,name FROM marketplace_products WHERE status='available' LIMIT 1").get();
+ assert.ok(product);
+ fixture.prepare("INSERT INTO marketplace_entitlements(product_id,user_id,status,created_at,updated_at) VALUES(?,?,'active',datetime('now'),datetime('now'))").run(product.id,owner.user.id);
+ fixture.prepare("INSERT INTO marketplace_publishers VALUES('demo-publisher',?,'Demo studio','company','demo','approved','','2026-01-01','2026-01-01')").run(member.user.id);
+ for(const [status,cents] of [['paid',1200],['awaiting_payment',350],['refunded',500]])fixture.prepare("INSERT INTO marketplace_orders VALUES(?,?,?,'demo-publisher',?,'demo',?,'USD','one_time',2000,?,?,'2027-01-01','2026-01-01','2026-01-01')").run('order-'+status,owner.user.id,product.id,status,cents,cents/5,status);
+ fixture.close();
+ await select('club-overview');await page.waitForFunction(()=>document.querySelector('[data-state=paid] .club-total')?.textContent==='$12.00');
+ assert.equal(await page.$eval('[data-state=awaiting_payment] .club-total',el=>el.textContent),'$3.50');
+ for(const width of [1280,390]){await page.setViewport({width,height:950});await page.$eval('.club-payments',e=>e.scrollIntoView({block:'start'}));await page.screenshot({path:path.join(artifacts,`owner-populated-${width}.png`)});}
+ await select('my-casino');
+ const memberPage=await browser.newPage();
+ await memberPage.evaluateOnNewDocument(token=>{localStorage.setItem('ggpoker.token',token);sessionStorage.setItem('ggpoker.entered','1');localStorage.setItem('ggpoker.welcomeSeen','1');},member.token);
+ for(const width of [1280,390]){
+   await memberPage.setViewport({width,height:950});await memberPage.goto(sandbox.url+`/#/organizers?club=${owner.user.id}`);
+   await memberPage.waitForFunction(name=>document.querySelector('.org-modal .club-shelf')?.textContent.includes(name),{},product.name);
+   await memberPage.waitForSelector('.ls',{hidden:true});
+   assert.equal(await memberPage.$('.club-payments'),null);
+   await memberPage.$eval('.org-modal .club-shelf',e=>e.scrollIntoView({block:'center'}));
+   await memberPage.screenshot({path:path.join(artifacts,`approved-member-${width}.png`)});
+ }
+ await memberPage.close();checks.push('Approved member sees active plugin, not owner payment history');
  await page.click(`a[href="#/organizers?club=${owner.user.id}"]`);await page.waitForFunction(()=>document.querySelector('.org-modal')?.textContent.includes('Emerald test club')||document.querySelector('[role="dialog"]')?.textContent.includes('Emerald test club'));
  for (const width of [1280,390,320]) {
   await page.setViewport({width,height:950});

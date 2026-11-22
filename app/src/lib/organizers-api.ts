@@ -27,6 +27,8 @@ async function request<T>(path: string, method = 'GET', body?: unknown): Promise
 }
 
 export const organizersApi = {
+  library: (id:number) => request<{plugins:{id:string;name:string;summary:string;category:string}[]}>(`/api/organizers/${id}/library`),
+  pluginOrders: () => request<{orders:{id:string;name:string;status:string;price_cents:number;currency:string;created_at:string}[]}>('/api/organizers/me/plugin-orders'),
   list: (search = '', sort: 'rank' | 'newest' = 'rank', offset = 0, limit = 20) => request<{ clubs: OrganizerClub[]; total: number; offset: number; limit: number }>(`/api/organizers?search=${encodeURIComponent(search)}&sort=${sort}&offset=${offset}&limit=${limit}`),
   profile: (id: number) => request<OrganizerClub>(`/api/organizers/${id}`),
   saveProfile: (body: { name: string; description: string; entryFeeCents: number }) => request<OrganizerClub>('/api/organizers/me/profile', 'POST', body),

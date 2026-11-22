@@ -78,6 +78,7 @@ import { createContributorSubmissions, createContributorRoutes } from './contrib
 import { previewRake } from './rake-lab.js';
 import { createManagementPolicy, privateSpinConfig, tableManagementProduct } from './management-plugins.js';
 import { createGamingo } from './gamingo.js';
+import { clubLibrary, clubOrders } from './club-library.js';
 import { createGamingoSandboxProvider, createGamingoFunProvider } from './gamingo-provider.js';
 import { createGamingoRoutes } from './gamingo-routes.js';
 import { createManagementRoutes } from './management-routes.js';
@@ -1699,6 +1700,16 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, organizerClubs.directory({search:url.searchParams.get('search') || '', rank:url.searchParams.get('sort') !== 'newest', offset:Number(url.searchParams.get('offset') || 0), limit:Number(url.searchParams.get('limit') || 20)}));
     }
     if (p.startsWith('/api/organizers/')) {
+      const library = p.match(/^\/api\/organizers\/(\d+)\/library$/);
+      if (req.method === 'GET' && (library || p === '/api/organizers/me/plugin-orders')) {
+        res.setHeader('Cache-Control','private, no-store');
+        const actor = requireUser(req,res); if (!actor) return;
+        if (actor.is_guest) return json(res,403,{error:'Sign in with a club account.'});
+        if (!library) return json(res,200,{orders:clubOrders(db,actor.id)});
+        const owner=Number(library[1]);
+        if (!organizerClubs.canEnter(owner,actor.id)) return json(res,403,{error:'Club membership required.'});
+        return json(res,200,{plugins:clubLibrary(db,owner)});
+      }
       const match = p.match(/^\/api\/organizers\/(\d+)(?:\/(knock|leave|entry|vote))?$/);
       if (match && !match[2] && req.method === 'GET') {
         const viewer = userByToken(tokenFrom(req))?.id;
