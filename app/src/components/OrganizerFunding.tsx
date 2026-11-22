@@ -8,12 +8,13 @@ const usd = (cents: number) => new Intl.NumberFormat('en-US', { style: 'currency
 export function OrganizerFunding({ userId, organizerId, active = true, canRequest = true, onChange }: { userId: number; organizerId?: number; active?: boolean; canRequest?: boolean; onChange?: () => Promise<void> }) {
   const [sessions, setSessions] = useState<SessionCredit[]>([]);
   const [rows, setRows] = useState<FundingRequest[]>([]), [enabled, setEnabled] = useState(false);
+  const [unit, setUnit] = useState<number | null>(null);
   const [amount, setAmount] = useState('20000'), [prices, setPrices] = useState<Record<string, string>>({}), [receipts, setReceipts] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
   const inFlight = useRef(false), keys = useRef(new Map<string, string>());
   const load = useCallback(async () => {
-    const [data, credit] = await Promise.all([organizerFundingApi.list(), sessionCreditApi.list()]); setRows(data.requests); setSessions(credit.sessions); setEnabled(data.enabled && credit.enabled);
-  }, []);
+    const [data, credit, rates] = await Promise.all([organizerFundingApi.list(), sessionCreditApi.list(), organizerFundingApi.clubs()]); setUnit(rates.clubs.find(c => c.id === organizerId)?.cents ?? null); setRows(data.requests); setSessions(credit.sessions); setEnabled(data.enabled && credit.enabled);
+  }, [organizerId]);
   useEffect(() => { if (active) void load().catch(e => setError(e.message)); }, [active, load]);
   const run = async (work: () => Promise<unknown>, message: string) => {
     if (inFlight.current) return;
@@ -31,7 +32,7 @@ export function OrganizerFunding({ userId, organizerId, active = true, canReques
     if (!organizerId || !Number.isSafeInteger(quantity) || quantity < 1) throw new Error('Enter a positive whole number of Cash Chips.');
     const identity = `${organizerId}:${quantity}`;
     const key = keys.current.get(identity) || crypto.randomUUID(); keys.current.set(identity, key);
-    await organizerFundingApi.create(organizerId, quantity, key); keys.current.delete(identity);
+    await organizerFundingApi.create(organizerId, quantity, key, unit); keys.current.delete(identity);
   }, 'Request sent. Your organizer can transfer chips or offer a payment link.');
   const offer = (row: FundingRequest, session = false) => run(async () => {
     const value = prices[row.id] ?? (row.feeCents == null ? '' : (row.feeCents / 100).toFixed(2));
@@ -54,6 +55,7 @@ export function OrganizerFunding({ userId, organizerId, active = true, canReques
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
     {organizerId && organizerId !== userId && canRequest && <form onSubmit={e => { e.preventDefault(); void send(); }}>
       <label>Cash Chips requested<input className="admin-input" type="number" min="1" max="9000000000" step="1" required value={amount} onChange={e => setAmount(e.target.value)} /></label>
+      {unit !== null && <p>1 club credit = {usd(unit)} · Total: {usd(unit * Number(amount))}</p>}
       <button className="mp-button mp-button-primary" disabled={!enabled || busy}>Send chip request</button>
     </form>}
     {!visible.length ? <p>No requests yet.</p> : <ul className="mp-account-list">{visible.map(row => {

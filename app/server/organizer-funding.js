@@ -32,6 +32,9 @@ function transaction(db, fn) {
 export function createOrganizerFunding({ db, chips, now = Date.now }) {
   if (!chips || typeof chips.moveInTransaction !== 'function') fail('Organizer chips service is required.', 500);
   db.exec(`
+    CREATE TABLE IF NOT EXISTS organizer_credit_prices (
+      organizer_id INTEGER PRIMARY KEY REFERENCES users(id), cents INTEGER NOT NULL CHECK(cents BETWEEN 1 AND 100000)
+    );
     CREATE TABLE IF NOT EXISTS organizer_funding_requests (
       id TEXT PRIMARY KEY, reference TEXT NOT NULL UNIQUE, organizer_id INTEGER NOT NULL REFERENCES users(id),
       user_id INTEGER NOT NULL REFERENCES users(id), amount INTEGER NOT NULL CHECK(amount BETWEEN 1 AND 9000000000),
@@ -59,6 +62,17 @@ export function createOrganizerFunding({ db, chips, now = Date.now }) {
     // Older offers have no durable record of whether a provider request was sent.
     db.exec('ALTER TABLE organizer_funding_requests ADD COLUMN checkout_started INTEGER NOT NULL DEFAULT 1');
   }
+  const price = id => db.prepare('SELECT cents FROM organizer_credit_prices WHERE organizer_id=?').get(id)?.cents ?? null;
+  const setPrice = (actor, cents) => {
+    activeOrganizer(actor); integer(cents, 'unit price', MAX_FEE_CENTS);
+    db.prepare('INSERT INTO organizer_credit_prices VALUES (?,?) ON CONFLICT(organizer_id) DO UPDATE SET cents=excluded.cents').run(actor,cents);
+    return { cents };
+  };
+  const clubs = actor => db.prepare(`SELECT u.id,u.nick,p.cents,COALESCE(a.balance,0) balance FROM users u
+    JOIN organizer_billing_memberships b ON b.user_id=u.id AND b.role='organizer' AND b.active=1 AND julianday(b.expires_at)>julianday(?)
+    LEFT JOIN organizer_credit_prices p ON p.organizer_id=u.id
+    LEFT JOIN organizer_chip_accounts a ON a.organizer_id=u.id AND a.account_key=?
+    WHERE u.banned=0 AND u.deleted_at IS NULL AND (u.id=? OR EXISTS (SELECT 1 FROM organizer_club_members m WHERE m.organizer_id=u.id AND m.user_id=? AND m.status='approved')) ORDER BY u.nick,u.id`).all(stamp(), 'wallet:'+actor, actor, actor);
   const stamp = () => new Date(now()).toISOString();
   const userId = (value) => integer(value, 'userId');
   const activeUser = (id) => db.prepare('SELECT id FROM users WHERE id=? AND banned=0 AND deleted_at IS NULL').get(userId(id));
@@ -84,7 +98,7 @@ export function createOrganizerFunding({ db, chips, now = Date.now }) {
     if (!db.prepare("SELECT 1 FROM organizer_club_members WHERE organizer_id=? AND user_id=? AND status='approved'").get(row.organizer_id, row.user_id)) fail('Approved club membership required.', 403, 'member_required');
   };
 
-  function create({ userId: actorId, organizerId, amount, key }) {
+  function create({ userId: actorId, organizerId, amount, key, expectedCents }) {
     actorId = userId(actorId); organizerId = activeOrganizer(organizerId); amount = integer(amount, 'amount'); key = text(key, 'key');
     if (!activeUser(actorId)) fail('Active member required.', 403, 'member_inactive');
     if (actorId === organizerId) fail('Club owners cannot request funding from themselves.', 409, 'owner_member');
@@ -95,8 +109,11 @@ export function createOrganizerFunding({ db, chips, now = Date.now }) {
     }
     if (!db.prepare("SELECT 1 FROM organizer_club_members WHERE organizer_id=? AND user_id=? AND status='approved'").get(organizerId, actorId)) fail('Approved club membership required.', 403, 'member_required');
     if (db.prepare("SELECT 1 FROM organizer_funding_requests WHERE organizer_id=? AND user_id=? AND state IN ('requested','offered')").get(organizerId, actorId)) fail('An outstanding funding request already exists.', 409, 'outstanding_request');
+    const cents = price(organizerId);
+    if (cents !== (expectedCents ?? null)) fail('Club price changed. Refresh the cashier before requesting credits.',409);
+    const total = cents === null ? null : integer(cents * amount,'checkout total in cents',MAX_FEE_CENTS);
     const id = randomUUID(), reference = `funding:${randomUUID()}`, ts = stamp();
-    db.prepare("INSERT INTO organizer_funding_requests(id,reference,organizer_id,user_id,amount,idempotency_key,state,created_at,updated_at) VALUES(?,?,?,?,?,?,'requested',?,?)").run(id, reference, organizerId, actorId, amount, key, ts, ts);
+    db.prepare("INSERT INTO organizer_funding_requests(id,reference,organizer_id,user_id,amount,idempotency_key,state,fee_cents,created_at,updated_at) VALUES(?,?,?,?,?,?,'requested',?,?,?)").run(id, reference, organizerId, actorId, amount, key, total, ts, ts);
     return result(rowById(id));
   }
 
@@ -128,6 +145,7 @@ export function createOrganizerFunding({ db, chips, now = Date.now }) {
 
   const offer = ({ userId: actorId, id, feeCents, startCheckout = false }) => transaction(db, () => {
     const row = requireRow(id); requireOrganizer(row, actorId); feeCents = integer(feeCents, 'feeCents', MAX_FEE_CENTS);
+    if (row.fee_cents != null && row.fee_cents !== feeCents) fail('The quoted price cannot change.',409,'terms_conflict');
     chips.assertSessionCreditUnlocked(row.organizer_id,row.user_id);
     if (row.state === 'offered') {
       if (row.fee_cents !== feeCents) fail('Funding terms cannot be changed.', 409, 'terms_conflict');
@@ -213,5 +231,5 @@ export function createOrganizerFunding({ db, chips, now = Date.now }) {
     db.prepare("UPDATE organizer_funding_requests SET state='rejected',updated_at=? WHERE id=?").run(stamp(),row.id);
     return result(rowById(row.id));
   });
-  return { create, list, get, credit, offer, attachLink, markCheckoutDisabled, settle, reject, cancel };
+  return { clubs, setPrice, create, list, get, credit, offer, attachLink, markCheckoutDisabled, settle, reject, cancel };
 }
