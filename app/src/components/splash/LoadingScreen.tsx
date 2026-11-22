@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import '../../loading-screen.css';
 
 export const INTRO_READ_MS = 3500;
-const INTRO_IMAGE = '/assets/brand/openpoker-intro.png';
+const INTRO_IMAGE = '/assets/brand/openpoker-intro.png?v=site-portrait-1';
 
 /** Keep the poster readable, then turn its pixels into the login backdrop. */
 export function LoadingScreen({ ready, bypass = false, children }: { readonly ready: boolean; readonly bypass?: boolean; readonly children: React.ReactNode }) {

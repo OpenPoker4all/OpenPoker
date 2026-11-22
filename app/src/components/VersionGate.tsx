@@ -94,7 +94,7 @@ export function VersionGate({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="boot-shell" role="status" aria-label={phase === 'updating' ? 'Updating to the latest version…' : 'Checking version…'}>
-      <img src="/assets/brand/openpoker-intro.png" alt="Hi, I’m Dan. Let me introduce you to OpenPoker, the project behind DanGG." />
+      <img src="/assets/brand/openpoker-intro.png?v=site-portrait-1" alt="Hi, I’m Dan. Let me introduce you to OpenPoker, the project behind DanGG." />
     </div>
   );
 }

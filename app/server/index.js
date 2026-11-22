@@ -3575,7 +3575,10 @@ const server = http.createServer(async (req, res) => {
 
     const isFile = (candidate) => !!candidate && fs.existsSync(candidate) && fs.statSync(candidate).isFile();
     let file = null;
-    if (p.startsWith('/assets/')) {
+    const sitePoster = path.join(DATA_DIR, 'branding', 'startup-portrait.png');
+    if (p === '/assets/brand/openpoker-intro.png' && isFile(sitePoster)) {
+      file = sitePoster;
+    } else if (p.startsWith('/assets/')) {
       for (const base of [path.join(PUBLIC, 'assets'), path.join(DIST, 'assets')]) {
         const cand = resolveInside(base, p.slice('/assets/'.length));
         if (isFile(cand)) { file = cand; break; }
