@@ -45,6 +45,11 @@ export function settlementMonths(periods) {
         if(sum!==int(inv.total))throw Error('Unallocated invoice amount');
       }
     }
+    // A reviewed, consecutive month with no activity leaves the loss unchanged.
+    // Never bridge an omitted month or an unreviewed preview.
+    if(close) for(const [key,prev] of history){
+      if(!positions.has(key) && prev.next===report.from) prev.next=next.toISOString().slice(0,10);
+    }
     for(const [key,p] of positions){
       const prev=history.get(key), a=approved.get(key);
       const row={organizerId:p.organizer_id,currency:p.currency,month:report.from.slice(0,7),ggr:p.ggr,supplierEstimate:p.revenue_share,status:'estimate'};

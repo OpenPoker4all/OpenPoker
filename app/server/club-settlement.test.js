@@ -66,3 +66,12 @@ test('two organisers receive only their own players, invoices and earnings via t
   }
  }finally{if(old===undefined)delete process.env.DANGG_SETTLEMENT_PACKET;else process.env.DANGG_SETTLEMENT_PACKET=old;db.close();unlinkSync(file);rmdirSync(dir);}
 });
+
+test('reviewed dormant month preserves losses, but a preview does not bridge a gap',()=>{
+ const jan=month('01',-90000,10000), feb=month('02',0,0), mar=month('03',330000,30000);
+ feb.report.rows=[];feb.report.totals=[];feb.close.invoices=[];
+ const r=settlementMonths([jan,feb,mar]).at(-1);
+ assert.equal(r.openingLoss,100000);assert.equal(r.organiserFee,20000);
+ delete feb.close;
+ assert.throws(()=>settlementMonths([jan,feb,mar]),/opening loss history/);
+});
