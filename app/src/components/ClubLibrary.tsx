@@ -1,3 +1,4 @@
+import {organizerChipsApi} from '../lib/organizer-chips-api';
 import {useEffect,useState} from 'react';
 import {organizersApi} from '../lib/organizers-api';
 import {organizerBillingApi} from '../lib/organizer-billing-api';
@@ -29,4 +30,13 @@ export function ClubServices(){
   <li><small>Organizer membership</small><strong>{membership?.active?'Active':'Inactive'}</strong><p>{membership?.active&&membership.expires_at?'Valid until '+new Date(membership.expires_at).toLocaleDateString():'See Management for membership terms.'}</p></li>
   <li><small>Service credits available</small><strong>{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(account.balance_cents/100)}</strong><p>Available for club services. Separate from player balances.</p></li>
   <li><small>Cash tables</small><strong>{account.tables.filter(t=>t.session?.paid_until&&Date.parse(t.session.paid_until)>Date.now()).length} prepaid</strong><p><a href="#/organiser?tab=my-tables">View table coverage and renewal times →</a></p></li></ul>}</section>
+}
+
+export function ClubGames({owner,tables}:{owner:number;tables:import('../lib/organizers-api').OrganizerClub['tables']}){
+ const [events,setEvents]=useState<Awaited<ReturnType<typeof organizerChipsApi.mine>>['tournaments']|null>(null);
+ const [failed,setFailed]=useState(false);
+ useEffect(()=>{let active=true;setEvents(null);setFailed(false);organizerChipsApi.mine().then(v=>{if(active)setEvents(v.tournaments.filter(t=>t.owner_id===owner))}).catch(()=>{if(active)setFailed(true)});return()=>{active=false}},[owner]);
+ return <section className="club-shelf club-games"><header><small>PLAY WITH YOUR CLUB</small><h3>Choose your game</h3><p>Only this club’s games appear here. Check the buy-in and available Cash Chips before joining.</p></header><ul>
+ {['cash','spin'].map(kind=>{const rows=(tables||[]).filter(t=>kind==='spin'?t.game==='spingold':t.game!=='spingold');return <li key={kind}><strong>{kind==='cash'?'Cash tables':'Spin & Go'}</strong><p>{kind==='cash'?'Play at your organizer’s cash tables.':'Three players. A random prize multiplier.'}</p>{rows.length?rows.map(t=><p key={t.id}><a href={'#/table/'+encodeURIComponent(t.id)}>Open {t.name} →</a><small>{t.seats} seats</small></p>):<p>No tables open right now.</p>}</li>})}
+ <li><strong>Tournaments</strong><p>Scheduled events hosted by your organizer.</p>{failed?<p role="alert">Could not load club tournaments.</p>:events===null?<p>Loading tournaments…</p>:events.length?events.map(t=><p key={t.id}><a href={'#/tournaments?id='+encodeURIComponent(t.id)}>View {t.name} →</a><small>{t.buyin.toLocaleString()} Cash Chips + {t.fee.toLocaleString()} fee</small></p>):<p>No tournaments available right now.</p>}</li></ul></section>
 }
