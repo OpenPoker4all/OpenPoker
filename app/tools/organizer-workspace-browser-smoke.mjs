@@ -85,7 +85,7 @@ try {
  fixture.close();
  await select('club-overview');await page.waitForFunction(()=>document.querySelector('[data-state=paid] .club-total')?.textContent==='$12.00');
  assert.equal(await page.$eval('[data-state=awaiting_payment] .club-total',el=>el.textContent),'$3.50');
- for(const width of [1280,390]){await page.setViewport({width,height:950});await page.$eval('.club-payments',e=>e.scrollIntoView({block:'start'}));await page.screenshot({path:path.join(artifacts,`owner-populated-${width}.png`)});}
+ for(const width of [1280,390]){await page.setViewport({width,height:950});await page.$eval('.club-payments',e=>e.scrollIntoView({block:'start'}));await (await page.$('.club-payments')).screenshot({path:path.join(artifacts,`owner-populated-${width}.png`)});}
  await select('my-casino');
  const memberPage=await browser.newPage();
  await memberPage.evaluateOnNewDocument(token=>{localStorage.setItem('ggpoker.token',token);sessionStorage.setItem('ggpoker.entered','1');localStorage.setItem('ggpoker.welcomeSeen','1');},member.token);

@@ -1708,7 +1708,15 @@ const server = http.createServer(async (req, res) => {
         if (!library) return json(res,200,{orders:clubOrders(db,actor.id)});
         const owner=Number(library[1]);
         if (!organizerClubs.canEnter(owner,actor.id)) return json(res,403,{error:'Club membership required.'});
-        return json(res,200,{plugins:clubLibrary(db,owner)});
+        const plugins = new Map(clubLibrary(db,owner).map(plugin => [plugin.id,plugin]));
+        const management = managementPolicy.account(owner);
+        for (const plugin of management.plugins) {
+          if (plugin.implemented && management.access.some(access => access.product_id === plugin.id && access.active) && !plugins.has(plugin.id))
+            plugins.set(plugin.id,{id:plugin.id,name:plugin.name,summary:plugin.summary,category:'Club management'});
+        }
+        if (String(owner) === process.env.GAMINGO_CATALOG_ORGANIZER_ID && getSetting('gamingo_fun_installed_'+owner,false) === true)
+          plugins.set('gamingo-fun',{id:'gamingo-fun',name:'Gamingo Slots',summary:'Open Slots for free Play Money demos.',category:'Play Money'});
+        return json(res,200,{plugins:[...plugins.values()]});
       }
       const match = p.match(/^\/api\/organizers\/(\d+)(?:\/(knock|leave|entry|vote))?$/);
       if (match && !match[2] && req.method === 'GET') {
