@@ -93,7 +93,11 @@ try {
  await memberPage.evaluateOnNewDocument(token=>{localStorage.setItem('ggpoker.token',token);sessionStorage.setItem('ggpoker.entered','1');localStorage.setItem('ggpoker.welcomeSeen','1');},member.token);
  for(const width of [1280,390]){
    await memberPage.setViewport({width,height:950});await memberPage.goto(sandbox.url+`/#/organizers?club=${owner.user.id}`);
-   await memberPage.waitForFunction(name=>document.querySelector('.org-modal .club-shelf')?.textContent.includes(name),{},product.name);
+   await memberPage.waitForFunction(()=>document.querySelector('.org-modal .club-games')?.textContent.includes('No tournaments available right now.'));
+   const games = await memberPage.$eval('.club-games', el=>el.textContent);
+   for(const label of ['Cash tables','Spin & Go','Tournaments']) assert.ok(games.includes(label));
+   assert.ok(!games.includes('Manager'));
+   assert.equal(await memberPage.$eval('.club-games',el=>getComputedStyle(el).backgroundColor),'rgb(0, 0, 0)');
    await memberPage.waitForSelector('.ls',{hidden:true});
    assert.equal(await memberPage.$('.club-payments'),null);
    await memberPage.$eval('.org-modal .club-shelf',e=>e.scrollIntoView({block:'center'}));
