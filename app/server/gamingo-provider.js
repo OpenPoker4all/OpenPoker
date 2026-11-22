@@ -70,10 +70,11 @@ function provider({ operatorId, keyId, secret, aggregatorId,
     if (!list.games.some(g => g.game_id === gameId && g.enabled === true && g.maintenance === false)) fail('Game unavailable.', 404);
     const session = await request('/b2b/v1/sessions', { player_id: playerId, game_id: gameId, jurisdiction, mode: 'fun', currency: 'G' });
     let url;
-    try { url = new URL(session.launch_url); } catch { fail('Invalid sandbox launch response.'); }
-    if (session.mode !== 'fun' || session.currency !== 'G' || url.origin !== 'https://games.gamingo.partners' || url.username || url.password
-        || !url.pathname.startsWith('/play/')) fail('Invalid sandbox launch response.');
-    return { url: url.href };
+    try { url = new URL(session.embed_url); } catch { fail('Invalid sandbox launch response.'); }
+    if (session.mode !== 'fun' || session.currency !== 'G' || url.origin !== 'https://rgs.gamingo.partners' || url.username || url.password
+        || url.pathname !== '/embed/v1/play' || !url.searchParams.get('launch')) fail('Invalid sandbox launch response.');
+    if (session.embedding?.embeddable !== true) fail('Demo embedding is not enabled for this operator.');
+    return { embedUrl: url.href };
   }
   return { games, play };
 }
