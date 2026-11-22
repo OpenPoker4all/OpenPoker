@@ -78,6 +78,7 @@ import { createContributorSubmissions, createContributorRoutes } from './contrib
 import { previewRake } from './rake-lab.js';
 import { createManagementPolicy, privateSpinConfig, tableManagementProduct } from './management-plugins.js';
 import { createGamingo } from './gamingo.js';
+import { clubLibrary, clubOrders } from './club-library.js';
 import { createGamingoSandboxProvider, createGamingoFunProvider } from './gamingo-provider.js';
 import { createGamingoRoutes } from './gamingo-routes.js';
 import { createManagementRoutes } from './management-routes.js';
@@ -1699,6 +1700,24 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, organizerClubs.directory({search:url.searchParams.get('search') || '', rank:url.searchParams.get('sort') !== 'newest', offset:Number(url.searchParams.get('offset') || 0), limit:Number(url.searchParams.get('limit') || 20)}));
     }
     if (p.startsWith('/api/organizers/')) {
+      const library = p.match(/^\/api\/organizers\/(\d+)\/library$/);
+      if (req.method === 'GET' && (library || p === '/api/organizers/me/plugin-orders')) {
+        res.setHeader('Cache-Control','private, no-store');
+        const actor = requireUser(req,res); if (!actor) return;
+        if (actor.is_guest) return json(res,403,{error:'Sign in with a club account.'});
+        if (!library) return json(res,200,{orders:clubOrders(db,actor.id)});
+        const owner=Number(library[1]);
+        if (!organizerClubs.canEnter(owner,actor.id)) return json(res,403,{error:'Club membership required.'});
+        const plugins = new Map(clubLibrary(db,owner).map(plugin => [plugin.id,plugin]));
+        const management = managementPolicy.account(owner);
+        for (const plugin of management.plugins) {
+          if (plugin.implemented && management.access.some(access => access.product_id === plugin.id && access.active) && !plugins.has(plugin.id))
+            plugins.set(plugin.id,{id:plugin.id,name:plugin.name,summary:plugin.summary,category:'Club management'});
+        }
+        if (String(owner) === process.env.GAMINGO_CATALOG_ORGANIZER_ID && getSetting('gamingo_fun_installed_'+owner,false) === true)
+          plugins.set('gamingo-fun',{id:'gamingo-fun',name:'Gamingo Slots',summary:'Open Slots for free Play Money demos.',category:'Play Money'});
+        return json(res,200,{plugins:[...plugins.values()]});
+      }
       const match = p.match(/^\/api\/organizers\/(\d+)(?:\/(knock|leave|entry|vote))?$/);
       if (match && !match[2] && req.method === 'GET') {
         const viewer = userByToken(tokenFrom(req))?.id;
@@ -3556,7 +3575,10 @@ const server = http.createServer(async (req, res) => {
 
     const isFile = (candidate) => !!candidate && fs.existsSync(candidate) && fs.statSync(candidate).isFile();
     let file = null;
-    if (p.startsWith('/assets/')) {
+    const sitePoster = path.join(DATA_DIR, 'branding', 'startup-portrait.png');
+    if (p === '/assets/brand/openpoker-intro.png' && isFile(sitePoster)) {
+      file = sitePoster;
+    } else if (p.startsWith('/assets/')) {
       for (const base of [path.join(PUBLIC, 'assets'), path.join(DIST, 'assets')]) {
         const cand = resolveInside(base, p.slice('/assets/'.length));
         if (isFile(cand)) { file = cand; break; }

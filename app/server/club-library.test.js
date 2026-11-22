@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DatabaseSync} from 'node:sqlite';
+import {clubLibrary,clubOrders} from './club-library.js';
+test('private orders include outstanding payments; member collection contains only current access for that club',()=>{
+ const db=new DatabaseSync(':memory:');
+ db.exec(`CREATE TABLE marketplace_products(id,name,summary,category);
+ CREATE TABLE marketplace_entitlements(product_id,user_id,status,expires_at);
+ CREATE TABLE marketplace_orders(id,buyer_user_id,product_id,status,price_cents,currency,created_at);
+ CREATE TABLE marketplace_paid_access(product_id,user_id,order_id,status,starts_at,expires_at);
+ INSERT INTO marketplace_products VALUES('p','Poker tools','Host tools','tools'),('x','Expired','Old','tools'),('q','Other club','Private','hosting');
+ INSERT INTO marketplace_orders VALUES('paid',1,'p','paid',100,'USD','2026-01-01'),('due',1,'x','awaiting_payment',250,'USD','2026-02-01'),('other',2,'q','paid',999,'USD','2026-03-01');
+ INSERT INTO marketplace_paid_access VALUES('p',1,'paid','active','2026-01-01',NULL),('q',2,'other','active','2026-01-01',NULL);
+ INSERT INTO marketplace_entitlements VALUES('x',1,'active','2025-01-01'),('p',1,'active',NULL);`);
+ assert.deepEqual(clubOrders(db,1).map(x=>x.id),['due','paid']);
+ assert.deepEqual(clubLibrary(db,1).map(x=>Object.keys(x)),[['id','name','summary','category']]);
+ assert.deepEqual(clubLibrary(db,1).map(x=>x.id),['p']);
+ assert.deepEqual(clubLibrary(db,2).map(x=>x.id),['q']);
+ db.close();
+});
