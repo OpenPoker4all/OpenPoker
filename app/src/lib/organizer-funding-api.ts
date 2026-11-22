@@ -17,9 +17,13 @@ async function request<T>(path = '', body?: unknown, base = '/api/marketplace/ch
   if (!response.ok) throw new Error(data.error || data.message || 'Funding request failed.');
   return data as T;
 }
+export type FundingClub = { id: number; nick: string; cents: number | null; balance: number };
 export const organizerFundingApi = {
+  settlement: () => request<{players:{playerId:number;player:string;dueCents:number}[];totalDueCents:number;supplierStatus:string;months:{month:string;currency:string;ggr:number;supplierEstimate:number;status:string;supplierCost?:number;supplierOpen?:number;debtor?:string;invoiceRefs?:string[];openingLoss?:number;closingLoss?:number;organiserFee?:number;creatorFee?:number}[]}>('/settlement'),
+  clubs: () => request<{clubs: FundingClub[]}>('/clubs'),
+  setPrice: (cents: number) => request('/price', { cents }),
   list: () => request<{ requests: FundingRequest[]; enabled: boolean }>(),
-  create: (organizerId: number, amount: number, key: string) => request<FundingRequest>('', { organizerId, amount, key }),
+  create: (organizerId: number, amount: number, key: string, expectedCents: number | null) => request<FundingRequest>('', { organizerId, amount, key, expectedCents }),
   act: (id: string, action: 'credit' | 'reject' | 'offer' | 'verify' | 'cancel', body: object = {}) => request<FundingRequest>(`/${encodeURIComponent(id)}/${action}`, body),
 };
 

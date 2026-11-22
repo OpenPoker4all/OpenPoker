@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-only
+import {organizerSettlement} from './club-settlement.js';
 function fail(message, status = 400) { throw Object.assign(new Error(message), { status }); }
 function fields(body, allowed) {
   if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).some(key => !allowed.includes(key))) fail('Unexpected request field.');
@@ -14,14 +15,24 @@ export function createOrganizerFundingRoutes({ db, funding, providers, mode, req
     if (url.pathname === base && req.method === 'GET') {
       json(res, 200, { requests: funding.list(user.id), enabled: mode === 'enforce' }); return true;
     }
+    if (url.pathname === base+'/settlement' && req.method === 'GET') {
+      res.setHeader('Cache-Control','private, no-store');
+      if(!funding.clubs(user.id).some(c=>c.id===user.id)) fail('Active organiser required.',403);
+      json(res,200,organizerSettlement(db,user.id,process.env.DANGG_SETTLEMENT_PACKET)); return true;
+    }
+    if (url.pathname === base+'/clubs' && req.method === 'GET') { json(res,200,{clubs:funding.clubs(user.id)}); return true; }
     if (req.method !== 'POST') fail('Method not allowed.', 405);
     if (mode !== 'enforce') fail('Organizer Cash Chips are not active.', 409);
     if (limiter) {
       if (limiter.isBlocked(user.id)) fail('Too many requests. Try again shortly.', 429);
       limiter.record(user.id);
     }
+    if (url.pathname === base+'/price') {
+      const body=fields(await readBody(req),['cents']);
+      json(res,200,funding.setPrice(user.id,body.cents)); return true;
+    }
     if (url.pathname === base) {
-      const body = fields(await readBody(req), ['organizerId', 'amount', 'key']);
+      const body = fields(await readBody(req), ['organizerId', 'amount', 'key', 'expectedCents']);
       json(res, 200, funding.create({ ...body, userId: user.id })); return true;
     }
     const match = url.pathname.slice(base.length).match(/^\/([^/]+)\/(credit|offer|reject|verify|cancel)$/);

@@ -279,3 +279,19 @@ test('existing guest funding requests cannot receive organizer credit or reserve
     assert.deepEqual([funding.get(1,id).state,chips.balance(1,1),chips.balance(1,2)], ['requested',50000,0]);
   } finally { db.close(); }
 });
+
+test('club owner prices bind approved member quotes to the poker ledger', () => {
+  const {funding,db}=fixture();
+  assert.throws(()=>funding.setPrice(2,25),{status:403});
+  funding.setPrice(1,25);
+  assert.deepEqual(funding.clubs(3),[]);
+  assert.equal(funding.clubs(2)[0].cents,25);
+  const args={userId:2,organizerId:1,amount:20,key:'club-rate',expectedCents:25};
+  const r=funding.create(args); assert.equal(r.feeCents,500);
+  funding.setPrice(1,30);
+  assert.equal(funding.create(args).feeCents,500);
+  assert.throws(()=>funding.offer({userId:1,id:r.id,feeCents:600}),{status:409});
+  funding.credit({userId:1,id:r.id});
+  assert.equal(funding.clubs(2)[0].balance,20);
+  assert.throws(()=>funding.create({...args,key:'new-request'}),{status:409});
+});
