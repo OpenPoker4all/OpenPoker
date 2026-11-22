@@ -19,3 +19,4 @@
 @media(max-width:900px){.org-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.org-profile-metrics{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:620px){.org-page{padding:18px 14px 90px}.org-hero{grid-template-columns:1fr;gap:20px;padding:30px 0}.org-hero h1{font-size:42px;letter-spacing:-2px}.org-toolbar{align-items:stretch;flex-direction:column}.org-toolbar label{max-width:none}.org-grid{grid-template-columns:1fr}.org-modal{padding:22px 17px}.org-profile-head h2{font-size:25px}.org-profile-metrics{grid-template-columns:repeat(2,1fr)}.org-requests article{grid-template-columns:auto 1fr}.org-requests button{grid-column:auto}.org-owner-actions{flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.org-card,.org-skeleton{animation:none;transition:none}}
+.app-page > .org-page { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
