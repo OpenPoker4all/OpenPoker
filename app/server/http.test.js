@@ -39,8 +39,7 @@ test('server binds an ephemeral port and serves the API', async () => {
     assert.equal(lobby.tables[0].synthetic, undefined);
     assert.equal(lobby.tables[0].avgPot, 0);
     assert.equal(lobby.tables[0].vpip, 0);
-    // The online total always starts above 100,000 (bots included) and never reads 0.
-    assert.ok(lobby.online > 100_000);
+    assert.equal(lobby.online, 0);
     // The login screen only offers the demo shortcut when this account exists.
     assert.equal(lobby.demoAccount, true);
     const badOrigin = await fetch(`http://127.0.0.1:${port}/api/lobby`, { headers: { origin: 'http://evil.example' } });
@@ -50,7 +49,7 @@ test('server binds an ephemeral port and serves the API', async () => {
       body: JSON.stringify({ login: 'DansiDanutz', password: 'ggpoker' }),
     }).then((r) => r.json());
     const signedInLobby = await fetch(`http://127.0.0.1:${port}/api/lobby`, { headers: { authorization: `Bearer ${login.token}` } }).then(r => r.json());
-    assert.ok(signedInLobby.online > 100_000);
+    assert.equal(signedInLobby.online, 1);
 
     assert.ok(login.token);
     const deposit = await fetch(`http://127.0.0.1:${port}/api/cashier/deposit`, {

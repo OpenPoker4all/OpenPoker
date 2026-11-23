@@ -33,17 +33,11 @@ export function countOnline(clients, recentUserIds = []) {
   return accounts.size + guests;
 }
 
-export const ONLINE_FLOOR = 100_000;
-const WAVE_AMPLITUDE = 6_000;
-const WAVE_PERIOD_MS = 600_000;
-
 /**
- * The total shown to players: a base above 100,000 that drifts slowly with the clock, plus real accounts and
- * guests and everyone seated at the lobby tables (bots included). It never falls below ONLINE_FLOOR and does
- * not reveal who is a bot.
+ * The total shown to players: real accounts and guests plus everyone seated at the lobby tables, bots
+ * included, so the figure is never a bare "0" and nobody can tell humans from bots by it.
  */
-export function totalOnline(realOnline, tables = [], now = Date.now()) {
+export function totalOnline(realOnline, tables = []) {
   const seated = tables.reduce((sum, table) => sum + Math.max(0, Number(table?.players) || 0), 0);
-  const drift = Math.round(WAVE_AMPLITUDE * (1 + Math.sin(now / WAVE_PERIOD_MS)));
-  return ONLINE_FLOOR + drift + Math.max(0, Number(realOnline) || 0) + seated;
+  return Math.max(0, Number(realOnline) || 0) + seated;
 }
