@@ -159,3 +159,8 @@
   .tl-info tr:first-child td { white-space: nowrap; }
   .tl-title p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
 }
+
+/* Particle reveal: the backdrop dims with progress, the window is driven by the hook, so the old pop-in is off. */
+.tl-backdrop { background: rgba(6, 3, 10, calc(var(--p, 0) * .78)); backdrop-filter: none; }
+.tl-window { animation: none; will-change: transform, opacity; }
+.tl-particles { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }

@@ -6,6 +6,8 @@ import { Countdown } from '../PageShell';
 import { explainers, gameName, lobbyTheme, modeName, statusLabel } from '../../lib/tournamentLobby';
 import { cashChips } from '../../lib/organizer-chips-api';
 import { formatRemaining, lateRegRings } from '../../lib/lateRegRings';
+import { useParticleReveal } from '../../lib/useParticleReveal';
+import { revealOriginRect } from '../../lib/revealOrigin';
 import {
   InfoPanel, InfoTip, PlayersPanel, PrizePanel, PropBetPanel, RulesPanel, SatellitesPanel, StructurePanel, TablesPanel,
 } from './TournamentLobbyPanels';
@@ -121,7 +123,14 @@ function ActionButton({ t, d, registered, busy, onRegister, onUnregister, onPlay
 }
 
 export function TournamentLobby(props: Props) {
-  const { tournament: t, onClose, onError } = props;
+  const { tournament: t, onError } = props;
+  const [open, setOpen] = useState(true);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const windowRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const finish = props.onClose;
+  const onClose = () => setOpen(false);
+  useParticleReveal(open, true, { root: rootRef, node: windowRef, canvas: canvasRef }, finish, revealOriginRect);
   const [d, setD] = useState<TournamentDetail | null>(null);
   const [left, setLeft] = useState<LeftTab>('rules');
   const [centre, setCentre] = useState<CentreTab>('info');
@@ -147,7 +156,7 @@ export function TournamentLobby(props: Props) {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
 
   const ex = explainers(t, d);
   const modeTip = t.mode === 'BOUNTY' ? ex.bounty : t.mode === 'MYSTERY' ? ex.mystery : t.mode === 'FLIP' ? ex.flip : t.mode === 'SATELLITE' ? ex.satellite : null;
@@ -158,8 +167,9 @@ export function TournamentLobby(props: Props) {
 
   // Portalled to <body> so it sits above the desktop page shell and the phone shell alike.
   return createPortal(
-    <div className="modal-backdrop tl-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className={`tl-window tl-${lobbyTheme(t)}`} role="dialog" aria-modal="true" aria-label={`${playName(t.name)} lobby`}>
+    <div ref={rootRef} className="modal-backdrop tl-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <canvas ref={canvasRef} className="tl-particles" aria-hidden="true" />
+      <div ref={windowRef} style={{ opacity: 0 }} className={`tl-window tl-${lobbyTheme(t)}`} role="dialog" aria-modal="true" aria-label={`${playName(t.name)} lobby`}>
         <header className="tl-head">
           <div className="tl-title">
             <span className="tl-status">{statusLabel(live, d)}</span>

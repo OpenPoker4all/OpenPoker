@@ -7,6 +7,7 @@ import { TournamentCategoryRail } from '../TournamentFilterBar';
 import { MobileFilterSheet } from './MobileFilterSheet';
 import { NavGlyph } from './PhoneIcons';
 import { HeroCarousel } from './HeroCarousel';
+import { setRevealOrigin } from '../../lib/revealOrigin';
 
 const CLOCK_TICK_MS = 1000;
 
@@ -69,11 +70,11 @@ const prizeLabel = (t: any) => t.chip_economy ? cashChips(t.prizePool ?? (t.entr
 
 const startLabel = (iso: string) => new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
 
-function EventRow({ t, now, onOpen }: { t: any; now: number; onOpen: () => void }) {
+function EventRow({ t, now, onOpen }: { t: any; now: number; onOpen: (card: HTMLElement) => void }) {
   const clock = eventClock(t, now);
   const tone = bannerTone(t);
   return (
-    <button type="button" className={'me-row tone-' + clock.tone} onClick={onOpen}>
+    <button type="button" className={'me-row tone-' + clock.tone} onClick={(event) => onOpen(event.currentTarget)}>
       <span className="me-clock">
         <b>{clock.label}</b>
         {clock.value
@@ -131,7 +132,7 @@ export function MobileEvents({ list, featured, heroArt, filters, onFilters, onRe
   return (
     <div className="me" ref={page}>
       <HeroCarousel>
-        <button type="button" className="me-hero me-hero--promo" disabled={!promo} onClick={() => promo && onOpen(promo)}>
+        <button type="button" className="me-hero me-hero--promo" disabled={!promo} onClick={(event) => { if (!promo) return; setRevealOrigin(event.currentTarget); onOpen(promo); }}>
           <img className="me-hero-art" src={DAILY_FREEROLL_ART} alt="" />
           <i className="me-hero-glow" aria-hidden="true" />
           <span className="me-hero-sparks" aria-hidden="true">
@@ -192,7 +193,7 @@ export function MobileEvents({ list, featured, heroArt, filters, onFilters, onRe
       <TournamentCategoryRail active={filters.category} only={PHONE_CHIPS} onChange={(category) => onFilters({ category })} />
 
       <div className="me-list">
-        {list.map((t) => <EventRow key={t.id} t={t} now={now} onOpen={() => onOpen(t)} />)}
+        {list.map((t) => <EventRow key={t.id} t={t} now={now} onOpen={(card) => { setRevealOrigin(card); onOpen(t); }} />)}
         {!list.length && <p className="me-empty">{emptyText}</p>}
       </div>
     </div>
