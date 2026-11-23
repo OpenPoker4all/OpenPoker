@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { money } from '../../lib/api';
+import { playMoney as money, playName } from '../../lib/tournamentMoney';
 import { Countdown } from '../PageShell';
 import { phaseOf, PHASE_LABEL, type TournamentFilters } from '../../lib/tournamentFilters';
 import { cashChips } from '../../lib/organizer-chips-api';
+import { setRevealOrigin } from '../../lib/revealOrigin';
 
 const eventMoney = (t: any, amount: number) => t.chip_economy ? cashChips(amount) : money(amount);
 
@@ -10,25 +11,26 @@ const EMBLEM = '/assets/ui/emblems';
 
 /** Series tabs: a 3D emblem (art 5) with a live label. */
 const SERIES_TABS = [
-  { key: 'all', label: 'Tournaments', emblem: 'trophy' },
-  { key: 'all', label: 'Millions Festival', emblem: 'crown-coin' },
-  { key: 'all', label: 'PLO Series', emblem: 'cards' },
-  { key: 'ggmasters', label: 'Masters', emblem: 'crown' },
-  { key: 'wsop', label: 'Live Series', emblem: 'target' },
-  { key: 'spin', label: 'Jackpot SNG', emblem: 'wheel' },
-  { key: 'mystery', label: 'Battle Royale', emblem: 'mystery' },
-  { key: 'quickflip', label: 'Quick Flip', emblem: 'bolt' },
+  { key: 'all', label: 'All', emblem: 'trophy' },
+  { key: 'wsop', label: 'Live', emblem: 'target' },
+  { key: 'ggmasters', label: 'Freeroll', emblem: 'gift' },
+  { key: 'mystery', label: 'Mystery', emblem: 'mystery' },
+  { key: 'spin', label: 'SNG', emblem: 'wheel' },
+  { key: 'flip', label: 'Speed Flip', emblem: 'bolt' },
+  { key: 'bounty', label: 'Bounty Hunters', emblem: 'target' },
+  { key: 'sat', label: 'Satellites', emblem: 'crown' },
 ];
 
+/** Same names as the phone chips and tiles; keys are the real category keys. */
 const CHIPS = [
   { key: 'all', label: 'All' },
-  { key: 'ggmasters', label: 'Masters' },
+  { key: 'wsop', label: 'Live' },
+  { key: 'ggmasters', label: 'Freeroll' },
+  { key: 'mystery', label: 'Mystery' },
+  { key: 'spin', label: 'SNG' },
+  { key: 'flip', label: 'Speed Flip' },
   { key: 'bounty', label: 'Bounty Hunters' },
-  { key: 'mystery', label: 'Battle Royale' },
-  { key: 'spin', label: 'Jackpot SNG' },
-  { key: 'quickflip', label: 'Quick Flip' },
-  { key: 'satellites', label: 'Satellites' },
-  { key: 'live', label: 'Live Series' },
+  { key: 'sat', label: 'Satellites' },
 ];
 
 const BUYIN_BANDS: { key: TournamentFilters['buyin']; label: string }[] = [
@@ -76,7 +78,7 @@ export function TournamentReferenceList({ list, registered, busy, filters, onCha
           <button
             key={tab.emblem}
             type="button"
-            className={'tref-series-tab' + (i === 0 ? ' on' : '')}
+            className={'tref-series-tab' + (filters.category === tab.key ? ' on' : '')}
             onClick={() => onChange({ category: tab.key })}
           >
             <img src={`${EMBLEM}/emblem-${tab.emblem}.webp`} alt="" />
@@ -130,7 +132,7 @@ export function TournamentReferenceList({ list, registered, busy, filters, onCha
                   key={t.id}
                   className={'tref-row phase-' + phase + (rowSelected ? ' on' : '') + ' mode-' + String(t.mode || 'standard').toLowerCase()}
                   onClick={() => { setSelectedId(t.id); setPanel('details'); }}
-                  onDoubleClick={() => onLobby(t)}
+                  onDoubleClick={(event) => { setRevealOrigin(event.currentTarget); onLobby(t); }}
                 >
                   <div className="tref-start">
                     <b>{statusText(t, now)}</b>
@@ -138,7 +140,7 @@ export function TournamentReferenceList({ list, registered, busy, filters, onCha
                   </div>
                   <div className="tref-name">
                     <span className={'tref-dot ' + (String(t.mode).toLowerCase() === 'bounty' ? 'gold' : String(t.mode).toLowerCase() === 'mystery' ? 'purple' : 'green')} aria-hidden="true" />
-                    <b>{t.name}</b>
+                    <b>{playName(t.name)}</b>
                     {reg && <em>Registered</em>}
                   </div>
                   <div className="tref-buyin">{t.buyin === 0 ? 'Freeroll' : eventMoney(t, t.buyin + t.fee)}</div>
@@ -176,7 +178,7 @@ export function TournamentReferenceList({ list, registered, busy, filters, onCha
           </div>
 
           <div className="tref-side-actions">
-            <button type="button" className="tref-btn" disabled={!selected} onClick={() => selected && onLobby(selected)}>Tournament Lobby</button>
+            <button type="button" className="tref-btn" disabled={!selected} onClick={(event) => { if (!selected) return; setRevealOrigin(event.currentTarget); onLobby(selected); }}>Tournament Lobby</button>
             {isReg ? (
               <button type="button" className="tref-btn primary" disabled={!selected || busy === selected.id} onClick={() => selected && onPlay(selected)}>Play</button>
             ) : (
@@ -189,7 +191,7 @@ export function TournamentReferenceList({ list, registered, busy, filters, onCha
             selected ? (
               <div className="tref-detail">
                 <div className="tref-detail-kicker">{String(selected.mode || 'STANDARD').replace(/_/g, ' ')} · {selected.format}</div>
-                <h3>{selected.name}</h3>
+                <h3>{playName(selected.name)}</h3>
                 <div className="tref-detail-tags">
                   <span>#{String(selected.mode || 'standard').toLowerCase()}</span>
                   <span>#{String(selected.format || 'nlh').toLowerCase()}</span>
@@ -213,7 +215,7 @@ export function TournamentReferenceList({ list, registered, busy, filters, onCha
                   ) : (
                     <button type="button" className="tref-btn primary" disabled={busy === selected.id} onClick={() => onRegister(selected)}>Register</button>
                   )}
-                  <button type="button" className="tref-btn" onClick={() => onLobby(selected)}>Full lobby</button>
+                  <button type="button" className="tref-btn" onClick={(event) => { setRevealOrigin(event.currentTarget); onLobby(selected); }}>Full lobby</button>
                   <button type="button" className="tref-detail-back" onClick={() => setPanel('filters')}>← Back to filters</button>
                 </div>
               </div>

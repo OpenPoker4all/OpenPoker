@@ -1,4 +1,4 @@
-// Phone tab bar: the five destinations and which one a route belongs to. Free of React so Node can test it.
+// Phone tab bar: the five destinations (the profile lives in the top-right avatar, not here) and which one a route belongs to. Free of React so Node can test it.
 
 export type PhoneNavItem =
   | { readonly key: string; readonly label: string; readonly to: string; readonly kind: 'glyph'; readonly glyph: 'poker' | 'events' | 'casino' | 'organizers' }
@@ -10,7 +10,6 @@ export const PHONE_NAV: readonly PhoneNavItem[] = Object.freeze([
   { key: 'home', label: 'Home', to: '/', kind: 'brand' },
   { key: 'casino', label: 'Casino', to: '/casino', kind: 'glyph', glyph: 'casino' },
   { key: 'organizers', label: 'Organizers', to: '/organizers', kind: 'glyph', glyph: 'organizers' },
-  { key: 'me', label: 'My Page', to: '/my-page', kind: 'avatar' },
 ]);
 
 /** Phone players land on the Poker game menu after login (mobile navigation); desktop lands on Home. */

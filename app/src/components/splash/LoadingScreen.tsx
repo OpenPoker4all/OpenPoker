@@ -1,8 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '../../loading-screen.css';
 
-export const INTRO_READ_MS = 3500;
+export const INTRO_READ_MS = 4500;
 const INTRO_IMAGE = '/assets/brand/openpoker-intro.png?v=site-portrait-1';
+const INTRO_VIDEO = '/assets/brand/dangg-intro.mp4?v=2';
+/** Safety net if the video never reaches its end (autoplay blocked, stalled decode). */
+const INTRO_VIDEO_MAX_MS = 7000;
 
 /** Keep the poster readable, then turn its pixels into the login backdrop. */
 export function LoadingScreen({ ready, bypass = false, children }: { readonly ready: boolean; readonly bypass?: boolean; readonly children: React.ReactNode }) {
@@ -10,15 +13,27 @@ export function LoadingScreen({ ready, bypass = false, children }: { readonly re
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [played, setPlayed] = useState(reducedMotion || bypass);
+  const [videoOk, setVideoOk] = useState(!(reducedMotion || bypass));
+  const clip = useRef<HTMLVideoElement>(null);
   const [done, setDone] = useState(bypass);
   const poster = useRef<HTMLImageElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (!loaded && !failed) return;
+    if (played) return;
+    const video = clip.current;
+    video?.play().catch(() => { setVideoOk(false); setPlayed(true); });
+    const timer = window.setTimeout(() => { setVideoOk(false); setPlayed(true); }, INTRO_VIDEO_MAX_MS);
+    return () => window.clearTimeout(timer);
+  }, [played]);
+
+  useEffect(() => {
+    if (!played || (!loaded && !failed)) return;
     const timer = window.setTimeout(() => setRead(true), INTRO_READ_MS);
     return () => window.clearTimeout(timer);
-  }, [loaded, failed]);
+  }, [played, loaded, failed]);
 
   useEffect(() => {
     if (bypass) { setDone(true); return; }
@@ -86,7 +101,9 @@ export function LoadingScreen({ ready, bypass = false, children }: { readonly re
   return <>
     <div className="ls-content" inert={!done && !bypass} aria-hidden={!done && !bypass ? true : undefined}>{children}</div>
     {!done && !bypass && <div className={`ls${leaving ? ' ls--leaving' : ''}`} role="status" aria-label="Introducing OpenPoker, the project behind DanGG">
-      <img ref={poster} className="ls-poster" src={INTRO_IMAGE} alt="Hi, I’m Dan. Let me introduce you to OpenPoker, the open-source project behind DanGG. OpenPoker4all / OpenPoker on GitHub. Built by DansiDanutz." onLoad={() => setLoaded(true)} onError={() => setFailed(true)} />
+      <div className="ls-ambient" style={{ backgroundImage: `url(${INTRO_IMAGE})` }} aria-hidden="true" />
+      <img ref={poster} className={`ls-poster${played ? '' : ' ls-poster--hidden'}`} src={INTRO_IMAGE} alt="Hi, I’m Dan. Let me introduce you to OpenPoker, the open-source project behind DanGG. OpenPoker4all / OpenPoker on GitHub. Built by DansiDanutz." onLoad={() => setLoaded(true)} onError={() => setFailed(true)} />
+      {videoOk && <video ref={clip} className="ls-video" src={INTRO_VIDEO} muted playsInline preload="auto" aria-hidden="true" onEnded={() => setPlayed(true)} onError={() => { setVideoOk(false); setPlayed(true); }} />}
       {failed && <p className="ls-fallback">OpenPoker · The project behind DanGG<br />Built by DansiDanutz</p>}
       <canvas ref={canvas} className="ls-particles" aria-hidden="true" />
       {read && !ready && <div className="ls-progress"><progress aria-label="Connecting to DanGG" /><span>Connecting to DanGG…</span></div>}

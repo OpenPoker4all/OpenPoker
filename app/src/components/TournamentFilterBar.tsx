@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   BUYIN_OPTIONS, CATEGORIES, GAME_OPTIONS, SPEED_OPTIONS, STATUS_OPTIONS, TOURNAMENT_SEARCH_MAX,
   tournamentFilterCount, TournamentFilters,
@@ -24,20 +24,28 @@ function FilterSelect({ label, options, value, onChange }: SelectProps) {
   );
 }
 
-type CategoryRailProps = { active: string; onChange: (key: string) => void };
+/** Artwork for the phone chips; categories without art keep the plain coloured circle. */
+const CHIP_ART: Readonly<Record<string, string>> = Object.freeze({
+  all: 'all', wsop: 'live', ggmasters: 'freeroll', mystery: 'mystery', spin: 'sng',
+});
+
+type CategoryRailProps = { active: string; onChange: (key: string) => void; /** Limit the rail to these category keys (the phone shows five). */ only?: readonly string[] };
 
 /** Native-style category rail; replaces the old series chips with the same look. */
-export function TournamentCategoryRail({ active, onChange }: CategoryRailProps) {
+export function TournamentCategoryRail({ active, onChange, only }: CategoryRailProps) {
+  const [tapped, setTapped] = useState<string | null>(null);
   return (
     <div className="series-bar" role="tablist" aria-label="Tournament categories">
-      {CATEGORIES.map((c) => (
+      {CATEGORIES.filter((c) => !only || only.includes(c.key)).map((c) => (
         <button
           key={c.key}
           type="button"
           role="tab"
           aria-selected={active === c.key}
-          className={'series-chip' + (active === c.key ? ' on' : '')}
-          onClick={() => onChange(c.key)}
+          className={'series-chip' + (active === c.key ? ' on' : '') + (CHIP_ART[c.key] ? ' has-art' : '') + (tapped === c.key ? ' flip' : '')}
+          style={CHIP_ART[c.key] ? ({ '--chip-art': `url(/assets/tournaments/chip-${CHIP_ART[c.key]}.webp)` } as React.CSSProperties) : undefined}
+          onClick={() => { setTapped(c.key); onChange(c.key); }}
+          onAnimationEnd={() => setTapped(null)}
         >
           {c.label}
         </button>

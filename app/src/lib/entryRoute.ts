@@ -3,7 +3,7 @@ export function resolveEntryRoute(hash: string, pathname: string, search: string
   const hashRoute = hash.replace(/^#/, '');
   if (hashRoute) return hashRoute;
   const path = pathname.replace(/\/+$/, '') || '/';
-  if (['/marketplace', '/contributor', '/organiser', '/organizers'].includes(path)) return path;
+  if (['/marketplace', '/contributor', '/organiser', '/organizers', '/presentation'].includes(path)) return path;
   if (path === '/marketplace/admin') return '/admin?section=marketplace';
   if (path === '/admin') return `/admin${search}`;
   return fallback;

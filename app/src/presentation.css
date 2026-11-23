@@ -1,0 +1,104 @@
+/* Public /presentation carousel. Swiping is native scroll-snap; only transform/opacity animate. */
+.pres { position: fixed; inset: 0; display: flex; flex-direction: column; background: #100516; color: #fff; overflow: hidden; font-family: var(--ui-font, system-ui, sans-serif); }
+.pres-track { flex: 1 1 0; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pres-track::-webkit-scrollbar { display: none; }
+.pres-slide { flex: 0 0 100%; min-width: 0; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; position: relative; overflow: hidden; }
+
+/* Slide 1: reveal video, then the avatar poster (same geometry so the hand-off is seamless). */
+.pres-reveal { position: absolute; inset: 0; display: grid; place-items: center; background: #100516; }
+.pres-ambient { position: absolute; inset: -12%; background: center / cover no-repeat; filter: blur(64px) brightness(.26) saturate(.9) hue-rotate(12deg); pointer-events: none; }
+.pres-poster, .pres-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; object-position: 50% 50%; pointer-events: none; -webkit-mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); mask-image: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); }
+.pres-poster--hidden { opacity: 0; }
+
+/* Slide 2: capture of the real login screen with live overlays aligned to it. */
+.pres-reveal--stage { container-type: size; }
+.pres-stage { position: relative; width: max(100cqw, calc(100cqh * 1442 / 3122)); aspect-ratio: 1442 / 3122; flex: none; contain: layout paint; --s: 1; }
+.pres-ambient--login { background-image: url('/assets/login/backdrop.webp'); }
+.pres-stage-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+.pres-stage .pres-credit { position: absolute; z-index: 2; margin: 0; box-sizing: border-box; transform-origin: 0 0; scale: var(--s); }
+.pres-stage .pres-news { position: absolute; inset: 0; padding: 12px; z-index: 3; }
+.pres-stage .cn-card { zoom: calc(var(--s) * .99); width: 388px; max-width: none; max-height: none; overflow: visible; }
+
+/* Live effects on the captured "Get the app" card: pulsing glow plus a sheen sweep (transform/opacity only). */
+.pres-stage .pres-app-fx { position: absolute; z-index: 1; margin: 0; pointer-events: none; transform-origin: 0 0; scale: var(--s); border-radius: 16px; }
+.pres-app-glow { position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 22px 2px #ffc64caa, inset 0 0 14px #ffc64c40; animation: pres-glow 3.6s ease-in-out infinite; }
+.pres-app-clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+.pres-app-sheen { position: absolute; top: 0; bottom: 0; left: 0; width: 34%; background: linear-gradient(105deg, transparent, #fff3c8a0 50%, transparent);
+  transform: translate3d(-130%, 0, 0) skewX(-18deg); will-change: transform; animation: pres-sheen 4s ease-in-out infinite; }
+@keyframes pres-glow { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+@keyframes pres-sheen { 0%, 45% { transform: translate3d(-130%, 0, 0) skewX(-18deg); } 100% { transform: translate3d(440%, 0, 0) skewX(-18deg); } }
+
+/* The line under DanGG in the pill alternates with a prompt to slide the avatar. */
+.pres-swap { display: grid; }
+.pres-swap > em { grid-area: 1 / 1; font-style: normal; white-space: nowrap; }
+.pres-swap-credit { animation: pres-swap-credit 6s ease-in-out infinite; }
+.pres-swap-hint { color: #ffd46a; font-weight: 800; animation: pres-swap-hint 6s ease-in-out infinite; }
+@keyframes pres-swap-hint { 0% { opacity: 0; transform: translate3d(-10px, 0, 0); } 6%, 36% { opacity: 1; transform: translate3d(0, 0, 0); } 42%, 100% { opacity: 0; transform: translate3d(8px, 0, 0); } }
+@keyframes pres-swap-credit { 0%, 52% { opacity: 0; } 60%, 100% { opacity: 1; } }
+
+/* Nudge toward the yellow star: gentle pulse, expanding ring, and a wiggling star (transform/opacity only). */
+.pres-news .cn-star-button { position: relative; animation: pres-star-pulse 2.2s ease-in-out .7s infinite; }
+.pres-news .cn-star-button::after { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 2px solid #ffe58b; opacity: 0; pointer-events: none; animation: pres-star-ring 2.2s ease-out .7s infinite; }
+.pres-news .cn-star-icon { display: inline-block; transform-origin: 50% 55%; animation: pres-star-wiggle 2.2s ease-in-out .7s infinite; }
+@keyframes pres-star-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes pres-star-ring { 0% { opacity: .9; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.32, 1.5); } }
+@keyframes pres-star-wiggle { 0%, 55%, 100% { transform: rotate(0) scale(1); } 12% { transform: rotate(-18deg) scale(1.3); } 26% { transform: rotate(16deg) scale(1.3); } 40% { transform: rotate(-8deg) scale(1.15); } }
+
+/* Slide 3: the two form states cross-fade over the live hero. Slide 4: the Poker capture settles in. */
+.pres-form-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; opacity: 0; transition: opacity .45s ease; }
+.pres-form-img.on { opacity: 1; }
+.pres-poker-img { opacity: 0; transform: translate3d(0, 18px, 0) scale(.985); transition: opacity .5s ease, transform .6s cubic-bezier(.2, .9, .25, 1.05); }
+.pres-poker-img.on { opacity: 1; transform: none; }
+
+/* Navigation: one slim row under the slide (dots + swipe sign), so it never covers the content. */
+.pres-nav { position: absolute; left: 0; right: 0; bottom: 0; height: calc(40px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); z-index: 5; display: flex; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(180deg, rgba(16, 5, 22, .0), #100516 40%); pointer-events: none; }
+.pres-dots { display: flex; gap: 0; margin: 0; padding: 0; list-style: none; pointer-events: auto; }
+.pres-dots button { position: relative; width: 24px; height: 32px; }
+.pres-dots button::after { content: ''; position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 4px; background: #ffffff66; transition: width .25s ease, margin .25s ease, background .25s ease; }
+.pres-dots button.on::after { width: 20px; margin-left: -10px; background: #f2c45c; }
+.pres-swipe { display: inline-flex; align-items: center; gap: 1px; color: #ffe6a1; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.pres-swipe i { font-style: normal; margin-right: 5px; }
+.pres-swipe b { font-size: 17px; line-height: 1; animation: pres-chev 1.5s ease-in-out infinite; }
+.pres-swipe b:nth-of-type(2) { animation-delay: .15s; }
+.pres-swipe b:nth-of-type(3) { animation-delay: .3s; }
+@keyframes pres-chev { 0%, 100% { opacity: .25; transform: translate3d(-2px, 0, 0); } 50% { opacity: 1; transform: translate3d(3px, 0, 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pres-dots button::after { transition: none; }
+  .pres-form-img, .pres-poker-img { transition: none; }
+  .pres-poker-img { transform: none; opacity: 1; }
+  .pres-app-glow, .pres-app-sheen, .pres-swap-credit, .pres-swap-hint { animation: none; }
+  .pres-news .cn-star-button, .pres-news .cn-star-button::after, .pres-news .cn-star-icon { animation: none; }
+  .pres-swap-hint { display: none; }
+  .pres-swipe b { animation: none; opacity: 1; }
+}
+
+/* Every slide is full screen: no frame, no padding. Recordings keep their menu by fitting the screen width. */
+.pres-reveal { padding: 0 0 calc(40px + env(safe-area-inset-bottom)); box-sizing: border-box; }
+.pres-phone { position: relative; z-index: 1; width: 100%; height: 100%; overflow: hidden; container-type: size; display: grid; place-items: center; background: transparent; }
+.pres-rec { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: contain; object-position: center bottom; background: transparent; }
+
+/* Slide 1: the whole poster stays visible; the sides are filled with a bright blurred copy of it, so no dark bars. */
+.pres-reveal > .pres-ambient:not(.pres-ambient--login) { inset: -8%; filter: blur(28px) brightness(.95) saturate(1.2); }
+
+/* Slides 1 and 2 are true full screen: no padding, no fill behind, the artwork covers everything. */
+.pres-reveal:not(.pres-reveal--video) { padding: 0; }
+.pres-reveal:not(.pres-reveal--video) > .pres-ambient:not(.pres-ambient--login) { display: none; }
+.pres-reveal:not(.pres-reveal--video) .pres-poster, .pres-reveal:not(.pres-reveal--video) .pres-video { object-fit: cover; object-position: 50% 30%; -webkit-mask-image: none; mask-image: none; }
+.pres-reveal:not(.pres-reveal--video) .pres-ambient--login { display: none; }
+.pres-nav { background: linear-gradient(180deg, rgba(16, 5, 22, 0), rgba(16, 5, 22, .55)); }
+.pres-nav { height: calc(30px + env(safe-area-inset-bottom)); }
+.pres-nav .pres-dots button { height: 26px; }
+
+/* The two full-screen slides keep the dots and Swipe sign at the bottom, over the artwork's empty lower area. */
+.pres--fullscreen .pres-nav { background: none; }
+.pres--fullscreen .pres-dots, .pres--fullscreen .pres-swipe { filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .8)); }
+
+/* Slide 2: a dark fade under the dots hides the capture's small legal line, so nothing overlaps there. */
+.pres[data-slide="1"] .pres-nav { background: linear-gradient(180deg, rgba(16, 5, 22, 0), rgba(16, 5, 22, .96) 55%); height: calc(54px + env(safe-area-inset-bottom)); }
+/* News pop-up: tidy spacing so the text is clear and nothing crowds. */
+.pres-stage .cn-card { padding: 20px 18px 16px; }
+.pres-stage .cn-body p { margin: 0 0 12px; line-height: 1.5; }
+
+.pres-stage .pres-news { padding: 12px 12px 64px; align-items: center; }
+.pres-stage .cn-card { max-height: none; }

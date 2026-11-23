@@ -75,11 +75,11 @@ export type Category = {
 
 /** The category rail. `mode` decides first; the name needle is the fallback. */
 export const CATEGORIES: readonly Category[] = [
-  { key: 'all', label: 'All series', modes: [], needle: null },
-  { key: 'wsop', label: 'Live Series', modes: [], needle: 'live series' },
-  { key: 'ggmasters', label: 'Masters', modes: [], needle: 'masters' },
-  { key: 'mystery', label: 'Mystery Bounty', modes: ['MYSTERY'], needle: 'mystery' },
-  { key: 'spin', label: 'Jackpot SNG', modes: [], needle: 'jackpot sng' },
+  { key: 'all', label: 'All', modes: [], needle: null },
+  { key: 'wsop', label: 'Live', modes: [], needle: 'live series' },
+  { key: 'ggmasters', label: 'Freeroll', modes: [], needle: 'masters' },
+  { key: 'mystery', label: 'Mystery', modes: ['MYSTERY'], needle: 'mystery' },
+  { key: 'spin', label: 'SNG', modes: [], needle: 'jackpot sng' },
   { key: 'flip', label: 'Quick Flip', modes: ['FLIP'], needle: 'quick flip' },
   { key: 'bounty', label: 'Bounty Hunters', modes: ['BOUNTY'], needle: 'bounty hunters' },
   { key: 'sat', label: 'Satellites', modes: ['SATELLITE'], needle: 'satellite' },
@@ -88,6 +88,7 @@ export const CATEGORIES: readonly Category[] = [
 const CATEGORY_KEYS = CATEGORIES.map((c) => c.key);
 
 export function inCategory(t: TournamentLike, key: string): boolean {
+  if (key === 'ggmasters') return buyinBandOf(t) === 'free';
   const cat = CATEGORIES.find((c) => c.key === key);
   if (!cat || cat.key === 'all') return true;
   const mode = String(t.mode || '').toUpperCase();

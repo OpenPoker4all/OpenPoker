@@ -1,6 +1,12 @@
 .ls-content { display: contents; }
 .ls { position: fixed; inset: 0; z-index: 2000; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); place-items: center; height: 100dvh; box-sizing: border-box; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); overflow: hidden; background: #100516; color: #fff; }
 .ls-poster { display: block; min-width: 0; min-height: 0; width: 100%; height: 100%; object-fit: contain; }
+.ls-poster--hidden { opacity: 0; }
+.ls-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.ls--leaving .ls-video { opacity: 0; }
+.ls-ambient { display: none; position: absolute; z-index: -1; inset: -12%; background: center / cover no-repeat; filter: blur(64px) brightness(.26) saturate(.9) hue-rotate(12deg); pointer-events: none; }
+@media (min-aspect-ratio: 11/20) { .ls-ambient { display: block; } }
+.ls--leaving .ls-ambient { opacity: 0; }
 .ls-particles { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .ls--leaving { background: transparent; pointer-events: none; }
 .ls--leaving .ls-poster { opacity: 0; }

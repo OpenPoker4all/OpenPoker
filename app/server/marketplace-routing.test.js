@@ -29,3 +29,9 @@ test('login resumes only the private tournament named by the invitation', () => 
   assert.equal(marketplaceAuthDestination('/login?returnTo=tournaments&id=cup'), null);
   assert.equal(marketplaceAuthDestination('/tournaments?id=cup&invite=abc'), '/tournaments?id=cup&invite=abc');
 });
+
+test('the public presentation URL survives a direct visit or refresh', () => {
+  assert.equal(resolveEntryRoute('', '/presentation', '', '/'), '/presentation');
+  assert.equal(resolveEntryRoute('', '/presentation/', '', '/'), '/presentation');
+  assert.equal(resolveEntryRoute('#/login', '/presentation', '', '/'), '/login');
+});

@@ -32,6 +32,7 @@ import { Marketplace } from './pages/Marketplace';
 import { PlatformWorkspace } from './pages/PlatformWorkspace';
 import { RakeLab } from './pages/RakeLab';
 import { Organizers } from './pages/Organizers';
+import { Presentation } from './pages/presentation/Presentation';
 
 function ScaleStage({ children }: { children: React.ReactNode }) {
   const phoneIsLandscape = () => needsPortrait(screen, window.matchMedia('(pointer: coarse)').matches);
@@ -79,7 +80,7 @@ function ComingSoon({ title }: { title: string }) {
 
 export default function App() {
   const { loading, route } = useApp();
-  return <LoadingScreen ready={!loading} bypass={route.split('?')[0] === '/marketplace'}><AppContent /></LoadingScreen>;
+  return <LoadingScreen ready={!loading} bypass={['/marketplace', '/presentation'].includes(route.split('?')[0])}><AppContent /></LoadingScreen>;
 }
 
 function AppContent() {
@@ -123,6 +124,8 @@ function AppContent() {
   // The catalog is public and has its own layout, loading state and account controls.
   // Viewing it never creates a guest player or requires installation of the poker app.
   if (route.split('?')[0] === '/marketplace') return <Marketplace />;
+  // The presentation is public and standalone: no splash, no guest player, no install gate.
+  if (route.split('?')[0] === '/presentation') return <Presentation />;
 
   if (!splashDone || loading) {
     return null;

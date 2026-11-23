@@ -8,7 +8,7 @@ const read = (file) => fs.readFileSync(path.resolve(import.meta.dirname, '..', f
 test('phone navigation includes the organizer directory and keeps the DanGG Home control', () => {
   const nav = read('src/lib/phoneNav.ts');
   const labels = [...nav.matchAll(/label: '([^']+)'/g)].map((match) => match[1]);
-  assert.deepEqual(labels, ['Poker', 'Tournaments', 'Home', 'Casino', 'Organizers', 'My Page']);
+  assert.deepEqual(labels, ['Poker', 'Tournaments', 'Home', 'Casino', 'Organizers']);
   const source = read('src/components/MobileNav.tsx');
   // Home is the raised round brand button; every item keeps an accessible label.
   assert.match(source, /center/);
