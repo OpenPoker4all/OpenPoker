@@ -32,3 +32,12 @@ test('presence forgets users after the window', async () => {
   assert.deepEqual(presence.recent(1500), [6]);
   assert.deepEqual(presence.recent(5000), []);
 });
+
+test('displayOnline stays above 100K, moves over time and adds real sessions', async () => {
+  const { displayOnline } = await import('./online-count.js');
+  const a = displayOnline(0, 1_000_000_000);
+  const b = displayOnline(0, 1_000_000_000 + 40_000);
+  assert.ok(a >= 100000 && b >= 100000);
+  assert.notEqual(a, b);
+  assert.ok(displayOnline(5, 1_000_000_000) === a + 5);
+});

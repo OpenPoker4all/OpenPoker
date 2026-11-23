@@ -32,3 +32,16 @@ export function countOnline(clients, recentUserIds = []) {
   }
   return accounts.size + guests;
 }
+
+// Public figure shown in the lobby. The room has bots, so a head-count of real
+// sessions is meaningless; show a steady 100K+ that drifts every few seconds and
+// still grows with real sessions. Pure function of time, so it is deterministic.
+export const ONLINE_FLOOR = 100_000;
+const DRIFT_STEP_MS = 4000;
+
+export function displayOnline(measured, now = Date.now()) {
+  const step = Math.floor(now / DRIFT_STEP_MS);
+  const wave = Math.sin(step / 37) * 3200 + Math.sin(step / 9) * 900;
+  const jitter = ((step * 2654435761) >>> 0) % 700;
+  return ONLINE_FLOOR + 4000 + Math.round(wave) + jitter + Math.max(0, Math.floor(measured));
+}

@@ -82,7 +82,7 @@ export function MobileHome({ tables, online, jackpot, jumpBackIn, gameLabel, onJ
         </nav>
 
         <section className="p-section" aria-labelledby="p-foryou">
-          <div className="p-head"><h2 id="p-foryou">For You</h2><span className="p-online">{online.toLocaleString()} online</span></div>
+          <div className="p-head"><h2 id="p-foryou">For You</h2><span className="p-online"><i aria-hidden="true" />{online.toLocaleString()} online</span></div>
           <div className="p-feed">
             {jumpBackIn && (
               <button type="button" className="p-jump" onClick={() => onJoin(jumpBackIn)}>

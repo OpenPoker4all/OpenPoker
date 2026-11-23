@@ -456,7 +456,8 @@
   .p-head { display: flex; align-items: center; gap: 10px; padding: 0 14px; margin-bottom: 10px; }
   .p-head h2 { margin: 0; color: #fff; font-size: 18px; font-weight: 800; }
   .p-head button { margin-left: auto; min-height: 32px; color: #a8a49b; font-size: 13px; }
-  .p-online { margin-left: auto; padding: 3px 10px; border: 1px solid #2fbf63; border-radius: 999px; color: #2fbf63; font-size: 12.5px; }
+  .p-online { margin-left: auto; padding: 0; border: 0; border-radius: 0; background: none; color: #9be3b0; font-size: 12.5px; }
+  .p-topbar-home .p-online { margin: 0; font-size: 11px; }
 
   .p-feed { display: flex; flex-direction: column; gap: 8px; padding: 0 12px; }
   .p-jump {
