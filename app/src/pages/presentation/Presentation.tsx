@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import '../../presentation.css';
 import { RevealSlide } from './RevealSlide';
 import { LoginSlide } from './LoginSlide';
+import { VideoSlide } from './VideoSlide';
 
 interface Slide {
   readonly id: string;
@@ -13,6 +14,10 @@ interface Slide {
 const SLIDES: readonly Slide[] = [
   { id: 'reveal', label: 'Introduction', render: (active, reducedMotion) => <RevealSlide active={active} reducedMotion={reducedMotion} /> },
   { id: 'login', label: 'Login', render: (active, reducedMotion) => <LoginSlide active={active} reducedMotion={reducedMotion} /> },
+  { id: 'poker', label: 'Poker', render: (active, reducedMotion) => <VideoSlide src="/assets/presentation/poker.mp4?v=1" active={active} reducedMotion={reducedMotion}
+    alt="The Poker tab after login: All-in or Fold, Hold'em, PLO and Short Deck with live player counts." /> },
+  { id: 'tournaments', label: 'Tournaments', render: (active, reducedMotion) => <VideoSlide src="/assets/presentation/tournaments.mp4?v=5" active={active} reducedMotion={reducedMotion}
+    alt="The Tournaments tab: the Daily Freeroll banner, format tiles, sticky search and the art category chips." /> },
 ];
 
 function useReducedMotion(): boolean {
@@ -70,7 +75,7 @@ export function Presentation() {
   const labels = useMemo(() => SLIDES.map((slide) => slide.label), []);
 
   return (
-    <main className="pres" aria-roledescription="carousel" aria-label="DanGG presentation">
+    <main className={'pres' + (index < 2 ? ' pres--fullscreen' : '')} data-slide={index} aria-roledescription="carousel" aria-label="DanGG presentation">
       <div ref={track} className="pres-track">
         {SLIDES.map((slide, position) => (
           <section key={slide.id} className="pres-slide" aria-roledescription="slide" aria-label={`${position + 1} of ${count}: ${slide.label}`}>
@@ -81,7 +86,6 @@ export function Presentation() {
 
       {count > 1 && (
         <nav className="pres-nav" aria-label="Slides">
-          <button type="button" className="pres-arrow" onClick={() => goTo(index - 1)} disabled={index === 0} aria-label="Previous slide">‹</button>
           <ol className="pres-dots">
             {labels.map((label, position) => (
               <li key={label}>
@@ -89,7 +93,7 @@ export function Presentation() {
               </li>
             ))}
           </ol>
-          <button type="button" className="pres-arrow" onClick={() => goTo(index + 1)} disabled={index === count - 1} aria-label="Next slide">›</button>
+          {index < count - 1 && <span className="pres-swipe" aria-hidden="true"><i>Swipe</i><b>›</b><b>›</b><b>›</b></span>}
         </nav>
       )}
     </main>

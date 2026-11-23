@@ -66,7 +66,7 @@ export function LoginSlide({ active, reducedMotion }: { readonly active: boolean
   return (
     <div className="pres-reveal pres-reveal--stage">
       <div className="pres-ambient pres-ambient--login" aria-hidden="true" />
-      <div ref={stage} className="pres-stage">
+      <div className="pres-phone"><div ref={stage} className="pres-stage">
         <LoginHero variant="splash" />
         <img className="pres-stage-img" src={IMAGE.src} width={IMAGE.width} height={IMAGE.height} decoding="async"
           alt="The DanGG login screen: Join, Log in, Play as guest and Get the app, under the Play-money poker room logo." />
@@ -105,7 +105,7 @@ export function LoginSlide({ active, reducedMotion }: { readonly active: boolean
             </article>
           </div>
         )}
-      </div>
+      </div></div>
     </div>
   );
 }
