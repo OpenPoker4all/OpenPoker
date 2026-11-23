@@ -67,7 +67,9 @@ try {
     assert.equal(await page.$('.ls-content[inert]'),null);
     assert.ok(await page.$('.login2-splash-app'));
     const installMotion=await page.$eval('.login2-splash-app',n=>({card:getComputedStyle(n).animationName,border:getComputedStyle(n,'::before').animationName,icon:getComputedStyle(n.querySelector('svg')).animationName,title:getComputedStyle(n.querySelector('b')).animationName}));
-    assert.ok(Object.values(installMotion).every(name=>width===320?name==='none':name!=='none'));
+    assert.equal(installMotion.card,'none','The card must stay static to prevent Android flicker');
+    assert.equal(installMotion.title,'none','The title must stay static to prevent Android flicker');
+    assert.ok([installMotion.border,installMotion.icon].every(name=>width===320?name==='none':name!=='none'));
     await page.screenshot({path:path.join(artifacts,`login-${width}.png`)});
     await page.click('.creator-credit-btn'); await page.waitForSelector('.cn-star-button');
     assert.equal(await page.$eval('.cn-star-button',n=>getComputedStyle(n).backgroundColor),'rgb(255, 213, 74)');
