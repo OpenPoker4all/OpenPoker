@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { api, money, type TournamentDetail } from '../../lib/api';
+import { api, type TournamentDetail } from '../../lib/api';
+import { playMoney as money, playName } from '../../lib/tournamentMoney';
 import { Countdown } from '../PageShell';
 import { explainers, gameName, lobbyTheme, modeName, statusLabel } from '../../lib/tournamentLobby';
 import { cashChips } from '../../lib/organizer-chips-api';
+import { formatRemaining, lateRegRings } from '../../lib/lateRegRings';
 import {
   InfoPanel, InfoTip, PlayersPanel, PrizePanel, PropBetPanel, RulesPanel, SatellitesPanel, StructurePanel, TablesPanel,
 } from './TournamentLobbyPanels';
@@ -40,11 +42,46 @@ function Tabs<K extends string>({ tabs, value, onChange, label }: { tabs: [K, st
   );
 }
 
+const RING_OUTER = 49;
+const RING_INNER = 36;
+
+/** One ring per hour of late registration left, each hour its own colour; the partial hour is the outermost arc. */
+function LateRegRings({ endsAt }: { endsAt: number }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const remaining = endsAt - now;
+  const rings = lateRegRings(remaining);
+  const step = (RING_OUTER - RING_INNER) / Math.max(1, rings.length);
+  return (
+    <>
+      <svg className="tl-ring-svg" viewBox="0 0 100 100" aria-hidden="true">
+        {rings.map((ring, index) => {
+          const radius = RING_OUTER - step * index - step / 2;
+          const circumference = 2 * Math.PI * radius;
+          return (
+            <g key={ring.hour} transform="rotate(-90 50 50)">
+              <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,.08)" strokeWidth={step - 1.2} />
+              <circle cx="50" cy="50" r={radius} fill="none" stroke={ring.color} strokeWidth={step - 1.2} strokeLinecap="round"
+                strokeDasharray={`${circumference * ring.fraction} ${circumference}`} />
+            </g>
+          );
+        })}
+      </svg>
+      <span className="tl-ring-left" aria-label={`Late registration closes in ${formatRemaining(remaining)}`}>{formatRemaining(remaining)}</span>
+    </>
+  );
+}
+
 function ClockRing({ t, d }: { t: any; d: TournamentDetail | null }) {
   const clock = d?.clock;
+  const late = Boolean(d?.lateReg.open && d.lateReg.endsAt);
   if (clock) {
     return (
-      <div className="tl-ring" aria-label={`Level ${clock.level}`}>
+      <div className={'tl-ring' + (late ? ' tl-ring--late' : '')} aria-label={`Level ${clock.level}`}>
+        {late && <LateRegRings endsAt={d!.lateReg.endsAt!} />}
         <small>{d?.lateReg.open ? 'Late Reg.' : 'Level'}</small>
         <b>{clock.level}</b>
         <span>{clock.sb.toLocaleString()}/{clock.bb.toLocaleString()}</span>
@@ -122,11 +159,11 @@ export function TournamentLobby(props: Props) {
   // Portalled to <body> so it sits above the desktop page shell and the phone shell alike.
   return createPortal(
     <div className="modal-backdrop tl-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className={`tl-window tl-${lobbyTheme(t)}`} role="dialog" aria-modal="true" aria-label={`${t.name} lobby`}>
+      <div className={`tl-window tl-${lobbyTheme(t)}`} role="dialog" aria-modal="true" aria-label={`${playName(t.name)} lobby`}>
         <header className="tl-head">
           <div className="tl-title">
             <span className="tl-status">{statusLabel(live, d)}</span>
-            <h2>{t.name}</h2>
+            <h2>{playName(t.name)}</h2>
             <p>{gameName(t)} · {modeName(t)}{modeTip && <InfoTip explain={modeTip} />}</p>
             <ActionButton {...props} t={live} d={d} />
           </div>

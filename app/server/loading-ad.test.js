@@ -13,7 +13,7 @@ test('startup shows the supplied OpenPoker poster and real connection progress',
   assert.match(source, /\/assets\/brand\/openpoker-intro\.png/);
   assert.match(source, /DansiDanutz/);
   assert.match(source, /<progress[^>]+aria-label="Connecting to DanGG"/);
-  assert.match(source, /INTRO_READ_MS = 3500/);
+  assert.match(source, /INTRO_READ_MS = 4500/);
   assert.match(source, /cancelAnimationFrame/);
 });
 

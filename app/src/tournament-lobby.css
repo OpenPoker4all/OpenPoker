@@ -120,3 +120,42 @@
   .tl-grid th { top: 0; }
   .tl-tip-pop { width: min(260px, 70vw); }
 }
+
+/* Phone: the lobby is a full-screen sheet, edge to edge, with the clock ring sized to hold its text. */
+@media (max-width: 760px) {
+  .tl-backdrop { padding: 0; align-items: stretch; justify-content: stretch; }
+  .tl-window { width: 100vw; max-width: none; height: 100dvh; border: 0; border-radius: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+  .tl-head { grid-template-columns: minmax(0, 1fr) 116px; padding: 58px 16px 14px; gap: 10px 12px; }
+  .tl-x { top: calc(10px + env(safe-area-inset-top, 0px)); right: 12px; width: 40px; height: 40px; font-size: 17px; }
+  .tl-ring { width: 116px; height: 116px; background: radial-gradient(circle, #18181b 70%, transparent 71%), conic-gradient(var(--tl-accent2), var(--tl-accent), var(--tl-accent2)); }
+  .tl-ring small { font-size: 10px; }
+  .tl-ring b { font-size: 24px; }
+  .tl-ring .tl-ring-time { font-size: 15px; }
+  .tl-ring span { font-size: 10.5px; margin-top: 1px; }
+  .tl-ring em { display: none; }
+  .tl-btn { height: 44px; min-width: 0; flex: 1 1 120px; font-size: 15px; }
+  .tl-title h2 { font-size: 20px; }
+  .tl-pool, .tl-stats { min-width: 0; }
+  .tl-stats { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  /* Header facts: label on the left, value left-aligned right after it, on every row. */
+  .tl-pool dl div, .tl-stats div { display: grid; grid-template-columns: 104px minmax(0, 1fr); column-gap: 10px; justify-content: start; align-items: baseline; text-align: left; }
+  .tl-pool dd, .tl-stats dd { text-align: left; }
+  .tl-stats { column-gap: 14px; grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Late-registration clock: coloured hour rings around the disc, countdown in the centre. */
+.tl-ring { position: relative; }
+.tl-ring--late { background: radial-gradient(circle, #18181b 70%, transparent 71%); box-shadow: 0 0 22px var(--tl-glow); }
+.tl-ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.tl-ring--late small, .tl-ring--late b, .tl-ring--late span, .tl-ring--late em { position: relative; }
+.tl-ring-left { font-size: 13px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+.tl-ring--late em { display: none; }
+.tl-ring-left { order: 9; margin-top: 2px; }
+
+/* Phone: the game / format line stays on one line. */
+@media (max-width: 760px) {
+  .tl-info th { width: 34%; font-size: 13px; }
+  .tl-info td { font-size: 13px; padding-left: 4px; }
+  .tl-info tr:first-child td { white-space: nowrap; }
+  .tl-title p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+}

@@ -134,27 +134,42 @@
   .m-backbar b { font-size: 19px; color: #fff; }
 
   /* ---- Events ------------------------------------------------------------------------- */
-  .me-hero { position: relative; display: block; width: 100%; height: 250px; overflow: hidden; background: radial-gradient(120% 90% at 80% 20%, #1d4e7a 0%, #0c2134 55%, #06101a 100%); }
+  .me-hero { position: relative; display: block; width: 100%; height: 196px; overflow: hidden; background: radial-gradient(120% 90% at 80% 20%, #1d4e7a 0%, #0c2134 55%, #06101a 100%); }
   .me-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .8; }
   .me-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0, 0, 0, .6), transparent 70%), linear-gradient(0deg, var(--ph-bg), transparent 35%); }
+  /* Hero carousel: native scroll-snap swiping, dots glide, auto-advance runs in HeroCarousel. */
+  .me-hero-wrap { position: relative; z-index: 1; transform: translate3d(0, calc(var(--me-s, 0) * .55px), 0); opacity: calc(1 - var(--me-s, 0) / 300); will-change: transform, opacity; }
+  .me-hero-track { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .me-hero-track::-webkit-scrollbar { display: none; }
+  .me-hero-track.is-single { overflow: hidden; touch-action: pan-y; }
+  .me-hero-slide { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+  .me-hero-dots { position: absolute; left: 0; right: 0; bottom: 8px; z-index: 2; display: flex; justify-content: center; gap: 2px; pointer-events: none; }
+  .me-hero-dots button { position: relative; width: 22px; height: 22px; pointer-events: auto; background: none; border: 0; }
+  .me-hero-dots button::after { content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 3px; background: rgba(255, 255, 255, .45);
+    transition: width .35s cubic-bezier(.3, .7, .3, 1), margin .35s cubic-bezier(.3, .7, .3, 1), background .3s ease; }
+  .me-hero-dots button.on::after { width: 24px; margin-left: -12px; background: #fff; }
+  @media (prefers-reduced-motion: reduce) { .me-hero-dots button::after { transition: none; } }
+
   /* Daily Freeroll promo: art drifts, the glow pulses, sparks rise, the copy slides in. Transform/opacity only. */
   .me-hero--promo { background: #12061a; text-align: left; }
-  .me-hero .me-hero-art { opacity: 1; object-position: 50% 0; transform-origin: 72% 38%; animation: me-hero-drift 12s ease-in-out infinite alternate; }
+  .me-hero .me-hero-art { opacity: 1; inset: auto 0 0 auto; width: auto; max-width: none; height: 100%; object-fit: contain; transform-origin: 70% 40%; animation: me-hero-drift 12s ease-in-out infinite alternate; }
   .me-hero--promo::after { background: linear-gradient(90deg, rgba(10, 3, 16, .6), transparent 58%), linear-gradient(0deg, var(--ph-bg), transparent 30%); }
-  .me-hero-glow { position: absolute; left: 50%; top: 2%; width: 66%; aspect-ratio: 1; border-radius: 50%; pointer-events: none; mix-blend-mode: screen;
-    background: radial-gradient(closest-side, rgba(255, 190, 60, .42), transparent 72%); animation: me-hero-pulse 3.4s ease-in-out infinite; }
+  .me-hero-glow { position: absolute; left: 50%; top: 2%; width: 66%; aspect-ratio: 1; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(closest-side, rgba(255, 190, 60, .3), transparent 72%); animation: me-hero-pulse 3.4s ease-in-out infinite; }
   .me-hero-sparks { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   .me-hero-spark { position: absolute; bottom: 24%; left: var(--x); width: var(--s); height: var(--s); border-radius: 50%; background: #ffd96a; opacity: 0;
     box-shadow: 0 0 8px 2px rgba(255, 200, 70, .85); will-change: transform, opacity; animation: me-hero-rise var(--d) ease-out var(--delay) infinite; }
-  .me-hero--promo .me-hero-copy { right: 46%; }
+  .me-hero--promo .me-hero-copy { right: 52%; top: 50%; bottom: auto; transform: translateY(-50%); gap: 3px; }
   .me-hero--promo .me-hero-copy > * { animation: me-hero-in .6s cubic-bezier(.2, .8, .25, 1) both; }
   .me-hero--promo .me-hero-copy > :nth-child(2) { animation-delay: .08s; }
   .me-hero--promo .me-hero-copy > :nth-child(3) { animation-delay: .16s; }
   .me-hero--promo .me-hero-copy > :nth-child(4) { animation-delay: .26s; }
-  .me-hero--promo .me-hero-copy b { font-size: 27px; }
-  .me-hero--promo .me-hero-copy strong { font-size: 34px; }
+  .me-hero--promo .me-hero-copy small { font-size: 10px; letter-spacing: 1.1px; }
+  .me-hero--promo .me-hero-copy b { font-size: 21px; }
+  .me-hero--promo .me-hero-copy strong { font-size: 25px; }
+  .me-hero--promo .me-hero-copy span { margin-top: 3px; padding: 3px 10px; font-size: 11px; }
   .me-hero--promo .me-hero-copy span { background: rgba(60, 18, 78, .8); border-color: #c9a24f; color: #fff1d4; }
-  @keyframes me-hero-drift { from { transform: translate3d(26px, 0, 0) scale(1.02); } to { transform: translate3d(20px, -4px, 0) scale(1.09); } }
+  @keyframes me-hero-drift { from { transform: translate3d(8px, 0, 0) scale(1); } to { transform: translate3d(4px, -2px, 0) scale(1.04); } }
   @keyframes me-hero-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
   @keyframes me-hero-rise { 0% { opacity: 0; transform: translate3d(0, 0, 0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate3d(var(--dx), -150px, 0); } }
   @keyframes me-hero-in { from { opacity: 0; transform: translate3d(-14px, 0, 0); } to { opacity: 1; transform: none; } }
@@ -169,19 +184,51 @@
   .me-hero-copy strong em { font-size: 18px; font-style: normal; vertical-align: top; }
   .me-hero-copy span { justify-self: start; margin-top: 6px; padding: 4px 12px; border-radius: 999px; background: rgba(20, 50, 90, .85); border: 1px solid #4b7cb5; color: #e6eefc; font-size: 13px; }
 
-  .me-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 18px var(--ph-pad) 0; }
+  /* Tiles ride up over the hero, which lags behind and fades; the tiles fade out last. */
+  .me-tiles { position: relative; z-index: 2; margin-top: -30px; opacity: calc(1 - var(--me-p, 0)); will-change: opacity; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 18px var(--ph-pad) 0; }
   .me-tile {
-    position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 76px; padding: 0 10px 0 16px;
-    border-radius: 10px; overflow: hidden; background: linear-gradient(90deg, #2a2a2d, #3b2427); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+    position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; height: 96px; padding: 8px 4px;
+    border-radius: 10px; transition: transform .15s ease; overflow: hidden; background: linear-gradient(90deg, #2a2a2d, #3b2427); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
   }
-  .me-tile b { font-size: 17px; line-height: 1.15; font-weight: 600; color: #fff; }
+  .me-tile b { font-size: 10.5px; letter-spacing: -.1px; line-height: 1.15; font-weight: 700; color: #fff; white-space: nowrap; text-align: center; }
+  .me-tile:active { transform: scale(.96); }
   .me-tile.tone-red { background: linear-gradient(90deg, #2b1416, #5a1a20); }
   .me-tile.tone-gold { background: linear-gradient(90deg, #2a2516, #4d3a12); }
   .me-tile.tone-violet { background: linear-gradient(90deg, #1d1a26, #3b2155); }
   .me-tile.tone-amber { background: linear-gradient(90deg, #2a1d14, #5a3412); }
   .me-tile.on { box-shadow: inset 0 0 0 2px var(--ph-gold); }
-  .me-tile-emblem { flex: 0 0 auto; width: 60px; height: 60px; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .55)); }
+  .me-tile-emblem { order: -1; flex: 0 0 auto; width: 46px; height: 46px; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .55)); }
+  .me-tile-emblem.flip { animation: tile-icon-lift .75s cubic-bezier(.3, .7, .3, 1); }
+  @keyframes tile-icon-lift {
+    0% { transform: translateY(0) rotate(0) scale(1); }
+    30% { transform: translateY(-8px) rotate(-14deg) scale(1.3); }
+    60% { transform: translateY(-4px) rotate(12deg) scale(1.25); }
+    100% { transform: translateY(0) rotate(0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) { .me-tile-emblem.flip { animation: none; } }
 
+  /* Category chips with artwork: the image fills the circle, a scrim keeps the label readable, tap lifts it. */
+  .me .series-chip.has-art { position: relative; display: grid; align-items: end; justify-items: center; padding: 0 0 7px; overflow: hidden; color: #fff; font-size: 11px; font-weight: 800;
+    background: #12061a var(--chip-art) center / cover no-repeat; border-color: #8b6338; text-shadow: 0 1px 4px #000, 0 0 8px #000; transition: transform .15s ease; }
+  .me .series-chip.has-art::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 38%, rgba(10, 3, 16, .82)); }
+  .me .series-chip.has-art > * { position: relative; }
+  .me .series-chip.has-art:active { transform: scale(.93); }
+  .me .series-chip.has-art.on { box-shadow: 0 0 0 2px #d8b15f, 0 0 16px rgba(240, 180, 60, .45);}
+  .me .series-chip.flip { animation: tile-icon-lift .75s cubic-bezier(.3, .7, .3, 1); }
+  @media (prefers-reduced-motion: reduce) { .me .series-chip.flip { animation: none; } }
+
+  /* Sticky list header: fixed height, so sticking never shifts the page. The title cross-fades into an inline Search. */
+  .me-sticky { position: sticky; top: 0; z-index: 6; background: #0b0b0c; contain: layout paint; }
+  .me-sticky .me-head { position: relative; height: 72px; padding: 0 var(--ph-pad); }
+  .me-sticky .me-head h1 { transition: opacity .2s ease; }
+  .me-search-inline { position: absolute; left: var(--ph-pad); right: calc(var(--ph-pad) + 64px); top: 14px; display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 16px; border-radius: 22px; background: #262629; color: #9a9aa0;
+    opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+  .me-search-inline input { flex: 1 1 auto; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: none; color: #f3efe6; font-size: 16px; }
+  .me-search-inline input::placeholder { color: #9a9aa0; }
+  .me-sticky.is-stuck { border-bottom: 1px solid #1d1d21; }
+  .me-sticky.is-stuck .me-head h1 { opacity: 0; }
+  .me-sticky.is-stuck .me-search-inline { opacity: 1; pointer-events: auto; }
+  .me-sticky.is-stuck .me-tool-search { display: none; }
   .me-head { display: flex; align-items: center; gap: 12px; padding: 26px var(--ph-pad) 12px; }
   .me-head h1 { flex: 1; margin: 0; font-size: 26px; font-weight: 700; color: #fff; }
   .me-tool { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 12px; background: #262629; color: #c8c8cc; }
@@ -189,7 +236,9 @@
   .me-tool i { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--ph-red); color: #fff; font: 700 11px/18px system-ui, sans-serif; font-style: normal; text-align: center; }
   .me-search { display: block; width: calc(100% - 2 * var(--ph-pad)); margin: 0 var(--ph-pad) 12px; height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--ph-line); background: #161618; color: #fff; font-size: 16px; }
   .me .tf-bar { margin: 0 var(--ph-pad) 12px; }
-  .me .series-bar { padding: 2px var(--ph-pad) 14px; }
+  .me .series-bar { padding: 2px var(--ph-pad) 14px; gap: 8px; overflow: visible; touch-action: pan-y; }
+  /* Exactly five chips fit the phone width. */
+  .me .series-chip { width: calc((100vw - 2 * var(--ph-pad) - 32px) / 5); height: auto; aspect-ratio: 1; flex: 0 0 calc((100vw - 2 * var(--ph-pad) - 32px) / 5); max-width: 84px; }
 
   .me-list { display: grid; gap: 10px; padding: 0 var(--ph-pad); }
   .me-row {

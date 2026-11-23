@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { money } from '../../lib/api';
+import { playMoney as money, playName } from '../../lib/tournamentMoney';
 import { Countdown } from '../PageShell';
 import { phaseOf, PHASE_LABEL, type TournamentFilters } from '../../lib/tournamentFilters';
 import { cashChips } from '../../lib/organizer-chips-api';
@@ -138,7 +138,7 @@ export function TournamentReferenceList({ list, registered, busy, filters, onCha
                   </div>
                   <div className="tref-name">
                     <span className={'tref-dot ' + (String(t.mode).toLowerCase() === 'bounty' ? 'gold' : String(t.mode).toLowerCase() === 'mystery' ? 'purple' : 'green')} aria-hidden="true" />
-                    <b>{t.name}</b>
+                    <b>{playName(t.name)}</b>
                     {reg && <em>Registered</em>}
                   </div>
                   <div className="tref-buyin">{t.buyin === 0 ? 'Freeroll' : eventMoney(t, t.buyin + t.fee)}</div>
@@ -189,7 +189,7 @@ export function TournamentReferenceList({ list, registered, busy, filters, onCha
             selected ? (
               <div className="tref-detail">
                 <div className="tref-detail-kicker">{String(selected.mode || 'STANDARD').replace(/_/g, ' ')} · {selected.format}</div>
-                <h3>{selected.name}</h3>
+                <h3>{playName(selected.name)}</h3>
                 <div className="tref-detail-tags">
                   <span>#{String(selected.mode || 'standard').toLowerCase()}</span>
                   <span>#{String(selected.format || 'nlh').toLowerCase()}</span>

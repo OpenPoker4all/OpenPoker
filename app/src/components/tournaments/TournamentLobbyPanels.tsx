@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { money, type TournamentDetail } from '../../lib/api';
+import { type TournamentDetail } from '../../lib/api';
+import { playMoney as money } from '../../lib/tournamentMoney';
 import { ordinal, prizeText } from '../../lib/tournamentPrizes';
 import { cashChips } from '../../lib/organizer-chips-api';
 import { seatFlag } from '../../lib/seatFlag';

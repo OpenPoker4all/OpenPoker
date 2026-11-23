@@ -1,7 +1,8 @@
 // Tournament lobby content (reference section 16). Every row and explainer mirrors
 // what the server implements: tournament-lobby.js (structure, late reg, clock),
 // table.js (bounty, mystery tiers, Quick Flip first hand) and tournament.js (payouts).
-import { money, type TournamentDetail } from './api';
+import { type TournamentDetail } from './api';
+import { playMoney as money } from './tournamentMoney';
 import { cashChips } from './organizer-chips-api';
 
 const financial = (t: any, amount: number) => t.chip_economy ? cashChips(amount) : money(amount);
