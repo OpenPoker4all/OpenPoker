@@ -127,7 +127,7 @@ export function MobileEvents({ list, featured, heroArt, filters, onFilters, onRe
     window.addEventListener('resize', measure);
     return () => { root.removeEventListener('scroll', onScroll); window.removeEventListener('resize', measure); cancelAnimationFrame(frame); };
   }, []);
-  const promo = list.find((t) => t.buyin === 0) || featured;
+  const promo = list.find((t) => Number(t.buyin) === 0 && Number(t.fee || 0) === 0);
 
   return (
     <div className="me" ref={page}>

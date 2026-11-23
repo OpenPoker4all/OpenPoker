@@ -88,6 +88,7 @@ export const CATEGORIES: readonly Category[] = [
 const CATEGORY_KEYS = CATEGORIES.map((c) => c.key);
 
 export function inCategory(t: TournamentLike, key: string): boolean {
+  if (key === 'ggmasters') return buyinBandOf(t) === 'free';
   const cat = CATEGORIES.find((c) => c.key === key);
   if (!cat || cat.key === 'all') return true;
   const mode = String(t.mode || '').toUpperCase();

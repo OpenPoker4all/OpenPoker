@@ -467,6 +467,9 @@ test('tournament categories match mode first and fall back to the name', () => {
   assert.equal(inCategory(tourney({ name: 'Weekly', mode: 'BOUNTY' }), 'bounty'), true);
   assert.equal(inCategory(tourney({ name: 'Mystery Bounty $10K', mode: 'MYSTERY' }), 'bounty'), false);
   assert.equal(inCategory(tourney({ name: 'Live Series $30K' }), 'wsop'), true);
+  assert.equal(inCategory(tourney({ name: 'Masters', buyin: 1000, fee: 100 }), 'ggmasters'), false);
+  assert.equal(inCategory(tourney({ name: 'Daily free', buyin: 0, fee: 0 }), 'ggmasters'), true);
+  assert.equal(inCategory(tourney({ name: 'Free with fee', buyin: 0, fee: 100 }), 'ggmasters'), false);
   assert.equal(inCategory(tourney(), 'unknown'), true, 'unknown category lists everything');
   assert.deepEqual(ids(filterTournaments(TOURNEYS, tq({ category: 'flip' }))), ['flip']);
 });
