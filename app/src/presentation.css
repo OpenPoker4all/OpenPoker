@@ -1,0 +1,33 @@
+/* Public /presentation carousel. Swiping is native scroll-snap; only transform/opacity animate. */
+.pres { position: fixed; inset: 0; display: flex; flex-direction: column; background: #100516; color: #fff; overflow: hidden; font-family: var(--ui-font, system-ui, sans-serif); }
+.pres-track { flex: 1 1 0; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.pres-track::-webkit-scrollbar { display: none; }
+.pres-slide { flex: 0 0 100%; min-width: 0; height: 100%; scroll-snap-align: start; scroll-snap-stop: always; position: relative; overflow: hidden; }
+
+/* Slide 1: reveal video, then the avatar poster (same geometry so the hand-off is seamless). */
+.pres-reveal { position: absolute; inset: 0; display: grid; place-items: center; background: #100516; }
+.pres-ambient { position: absolute; inset: -12%; background: center / cover no-repeat; filter: blur(64px) brightness(.26) saturate(.9) hue-rotate(12deg); pointer-events: none; }
+.pres-poster, .pres-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.pres-poster--hidden { opacity: 0; }
+
+/* Slide 2: capture of the real login screen with live overlays aligned to it. */
+.pres-reveal--stage { container-type: size; }
+.pres-stage { position: relative; width: min(100cqw, calc(100cqh * 1442 / 3122)); aspect-ratio: 1442 / 3122; contain: layout paint; --s: 1; }
+.pres-stage-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pres-stage .pres-credit { position: absolute; margin: 0; box-sizing: border-box; transform-origin: 0 0; scale: var(--s); }
+.pres-stage .pres-news { position: absolute; inset: 0; padding: 12px; }
+.pres-stage .cn-card { zoom: var(--s); width: 388px; max-width: none; max-height: none; overflow: visible; }
+
+/* Bottom navigation bar: dots plus arrows for desktop. */
+.pres-nav { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: #100516; }
+.pres-dots { display: flex; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.pres-dots button { position: relative; width: 28px; height: 28px; }
+.pres-dots button::after { content: ''; position: absolute; left: 50%; top: 50%; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 4px; background: #ffffff55; transition: width .25s ease, margin .25s ease, background .25s ease; }
+.pres-dots button.on::after { width: 22px; margin-left: -11px; background: #f2c45c; }
+.pres-arrow { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #f2c45c66; font-size: 26px; line-height: 1; color: #ffe6a1; }
+.pres-arrow:disabled { opacity: .3; cursor: default; }
+@media (pointer: coarse) { .pres-arrow { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pres-dots button::after { transition: none; }
+}
