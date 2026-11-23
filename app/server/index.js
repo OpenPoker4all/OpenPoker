@@ -111,7 +111,7 @@ import { setAdminRole } from './admin-roles.js';
 import { BATTLE_ROYALE_GAME, BATTLE_ROYALE_UNAVAILABLE, isBattleRoyale } from './battleroyale.js';
 import { CASHDROP_SETTING_KEYS, createCashDropLedger, createRushPool, readCashDropConfig, rushSeatElsewhere, validateCashDropSettings } from './rush-pool.js';
 import { JACKPOT_SEED, jackpotAccrual } from './badBeat.js';
-import { countOnline, createPresence, totalOnline } from './online-count.js';
+import { countOnline, createPresence } from './online-count.js';
 import { parseByteRange } from './byte-range.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -1915,7 +1915,7 @@ const server = http.createServer(async (req, res) => {
         rushPools: lobbyRushPools(tables),
         rushLeaderboard: RUSH_LOBBY.leaderboard(),
         banners,
-        online: totalOnline(countOnline(wss.clients, PRESENCE.recent()), tables),
+        online: countOnline(wss.clients, PRESENCE.recent()),
         jackpot: getSetting('jackpot', JACKPOT_SEED),
         rushCashDrop: readCashDropConfig(getSetting),
         recentWinners: Array.from({ length: 5 }, (_, i) => ({

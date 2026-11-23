@@ -32,15 +32,3 @@ test('presence forgets users after the window', async () => {
   assert.deepEqual(presence.recent(1500), [6]);
   assert.deepEqual(presence.recent(5000), []);
 });
-
-import { totalOnline } from './online-count.js';
-
-test('the online total includes everyone seated at the lobby tables, bots included', () => {
-  assert.equal(totalOnline(0, [{ players: 5 }, { players: 3 }]), 8);
-  assert.equal(totalOnline(2, [{ players: 5 }]), 7);
-});
-
-test('the online total never goes below the real count and ignores bad values', () => {
-  assert.equal(totalOnline(4, []), 4);
-  assert.equal(totalOnline(undefined, [{ players: -3 }, {}, null]), 0);
-});

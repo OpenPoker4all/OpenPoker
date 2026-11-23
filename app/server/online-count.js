@@ -32,12 +32,3 @@ export function countOnline(clients, recentUserIds = []) {
   }
   return accounts.size + guests;
 }
-
-/**
- * The total shown to players: real accounts and guests plus everyone seated at the lobby tables, bots
- * included, so the figure is never a bare "0" and nobody can tell humans from bots by it.
- */
-export function totalOnline(realOnline, tables = []) {
-  const seated = tables.reduce((sum, table) => sum + Math.max(0, Number(table?.players) || 0), 0);
-  return Math.max(0, Number(realOnline) || 0) + seated;
-}
