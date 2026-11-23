@@ -126,7 +126,8 @@
     display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px;
     font-style: normal; font-size: 15px; font-weight: 600; white-space: nowrap;
   }
-  .mg-players { flex: 0 0 auto; min-width: 84px; border: 1.5px solid #2f8a4c; color: var(--ph-green); background: rgba(70, 211, 111, .06); }
+  /* Player count: plain green text, no border or background, smaller than the perk pill. */
+  .mg-players { flex: 0 0 auto; min-width: 0; padding: 0 4px; height: 24px; border: 0; background: none; color: var(--ph-green); font-size: 13px; }
   .mg-perk { min-width: 0; overflow: hidden; text-overflow: ellipsis; border: 1.5px solid var(--ph-gold-dim); color: var(--ph-gold); background: rgba(242, 196, 92, .06); }
 
   .m-backbar { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; height: 52px; padding: 0 8px; background: var(--ph-bg); border-bottom: 1px solid var(--ph-line); }
@@ -384,8 +385,12 @@
   .p-dot { position: absolute; top: 7px; right: 7px; width: 8px; height: 8px; border-radius: 50%; background: #e0303c; box-shadow: 0 0 0 2px #0b0b0c; }
   .p-topbar-mid { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; min-width: 0; }
   .p-topbar-mid.is-brand { justify-content: flex-start; padding-left: 2px; }
-  .p-topbar-home { display: flex; align-items: center; min-height: 44px; padding: 0 8px 0 0; background: none; border: 0; cursor: pointer; }
+  .p-topbar-home { flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; display: flex; align-items: center; min-height: 44px; padding: 0 8px 0 0; background: none; border: 0; cursor: pointer; }
   .p-topbar-home:active { opacity: .7; }
+  .p-online { display: inline-flex; align-items: center; gap: 5px; margin-left: 1px; font-size: 11px; font-weight: 700; line-height: 1; color: #9be3b0; letter-spacing: .02em; white-space: nowrap; }
+  .p-online i { width: 7px; height: 7px; border-radius: 50%; background: #3ddc84; box-shadow: 0 0 6px #3ddc84; animation: p-online-pulse 2.2s ease-in-out infinite; }
+  @keyframes p-online-pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .p-online i { animation: none; } }
   .p-topbar-logo { height: 22px; width: auto; display: block; }
   .p-topbar-title { color: #f3efe6; font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .p-wallet {

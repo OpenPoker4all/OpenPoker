@@ -8,7 +8,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
 const exists = (f) => fs.existsSync(path.join(root, 'public', f));
 
-const EMBLEMS = ['trophy', 'crown-coin', 'cards', 'crown', 'target', 'wheel', 'mystery', 'bolt'];
+const EMBLEMS = ['trophy', 'gift', 'crown', 'target', 'wheel', 'mystery', 'bolt'];
 
 test('all eight emblems exist', () => {
   for (const name of EMBLEMS) assert.ok(exists(`assets/ui/emblems/emblem-${name}.webp`), name);

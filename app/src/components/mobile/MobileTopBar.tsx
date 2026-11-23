@@ -10,7 +10,8 @@ import { landingRoute } from '../../lib/phoneNav';
  * Play Money balance and Profile.
  */
 export function MobileTopBar({ title, showBrand = false }: { title?: string; showBrand?: boolean }) {
-  const { user, navigate, brand, route, dmUnread } = useApp();
+  const { user, navigate, brand, route, dmUnread, meta } = useApp();
+  const online = Number(meta?.online) || 0;
   const path = route.split('?')[0];
   const isRoot = ['/', '/casino', '/rewards', '/my-page'].includes(path) || route.includes('play=1');
   const showBack = Boolean(title) || ['/contributor', '/organiser'].includes(path);
@@ -29,6 +30,7 @@ export function MobileTopBar({ title, showBrand = false }: { title?: string; sho
         {title ? <b className="p-topbar-title">{title}</b> : showBrand ? (
           <button type="button" className="p-topbar-home" aria-label="DanGG home" onClick={() => navigate(landingRoute(true))}>
             <img src={brand.logo} alt="" className="p-topbar-logo" />
+            {online > 0 && <span className="p-online"><i aria-hidden="true" />{online.toLocaleString()} online</span>}
           </button>
         ) : <span />}
       </div>
