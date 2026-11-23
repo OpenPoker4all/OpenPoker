@@ -6,5 +6,5 @@ import path from 'node:path';
 test('mobile navigation exposes the organizer directory', () => {
   const source = fs.readFileSync(path.resolve(import.meta.dirname, '../src/lib/phoneNav.ts'), 'utf8');
   const labels = [...source.matchAll(/label: '([^']+)'/g)].map((match) => match[1]);
-  assert.deepEqual(labels, ['Poker', 'Tournaments', 'Home', 'Casino', 'Organizers', 'My Page']);
+  assert.deepEqual(labels, ['Poker', 'Tournaments', 'Home', 'Casino', 'Organizers']);
 });

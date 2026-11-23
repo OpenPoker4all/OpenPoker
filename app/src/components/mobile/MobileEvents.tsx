@@ -8,6 +8,17 @@ import { NavGlyph } from './PhoneIcons';
 
 const CLOCK_TICK_MS = 1000;
 
+/** Daily Freeroll promo banner: art, then rising gold sparks (fixed positions so every render matches). */
+const DAILY_FREEROLL_ART = '/assets/tournaments/hero-daily-freeroll.webp';
+const HERO_SPARKS: readonly { x: number; size: number; dur: number; delay: number; drift: number }[] = Object.freeze([
+  { x: 52, size: 4, dur: 5.2, delay: 0.0, drift: -14 }, { x: 58, size: 3, dur: 6.4, delay: 1.1, drift: 10 },
+  { x: 64, size: 5, dur: 4.8, delay: 2.3, drift: -8 }, { x: 70, size: 3, dur: 6.0, delay: 0.6, drift: 16 },
+  { x: 76, size: 4, dur: 5.6, delay: 3.1, drift: -18 }, { x: 82, size: 3, dur: 4.6, delay: 1.7, drift: 12 },
+  { x: 88, size: 5, dur: 6.8, delay: 2.7, drift: -10 }, { x: 94, size: 3, dur: 5.0, delay: 0.3, drift: 8 },
+  { x: 61, size: 3, dur: 7.0, delay: 4.0, drift: 14 }, { x: 73, size: 4, dur: 5.4, delay: 3.6, drift: -12 },
+  { x: 85, size: 3, dur: 6.2, delay: 4.6, drift: 6 }, { x: 55, size: 4, dur: 6.6, delay: 5.2, drift: -6 },
+]);
+
 /** The four format shortcuts under the hero; each one selects a category of the rail. */
 const FORMAT_TILES: readonly { key: string; label: string; emblem: string; tone: string }[] = [
   { key: 'flip', label: 'Quick Flip', emblem: 'bolt', tone: 'red' },
@@ -81,20 +92,25 @@ export function MobileEvents({ list, featured, heroArt, filters, onFilters, onRe
   const [searchOpen, setSearchOpen] = useState(filters.search !== '');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const activeFilters = tournamentFilterCount(filters);
+  const promo = list.find((t) => t.buyin === 0) || featured;
 
   return (
     <div className="me">
-      {featured && (
-        <button type="button" className="me-hero" onClick={() => onOpen(featured)}>
-          {heroArt && <img src={heroArt} alt="" />}
-          <span className="me-hero-copy">
-            <small>Tournament series</small>
-            <b>{featured.name}</b>
-            <strong>{featured.chip_economy ? cashChips(featured.prizePool ?? (featured.entrants || 0) * (featured.buyin || 0)) : money(featured.gtd, true)} {!featured.chip_economy && <em>GTD</em>}</strong>
-            <span>{startLabel(featured.start_at)} · Buy-in {featured.buyin === 0 ? 'Freeroll' : (featured.chip_economy ? cashChips(featured.buyin + featured.fee) : money(featured.buyin + featured.fee))}</span>
-          </span>
-        </button>
-      )}
+      <button type="button" className="me-hero me-hero--promo" disabled={!promo} onClick={() => promo && onOpen(promo)}>
+        <img className="me-hero-art" src={DAILY_FREEROLL_ART} alt="" />
+        <i className="me-hero-glow" aria-hidden="true" />
+        <span className="me-hero-sparks" aria-hidden="true">
+          {HERO_SPARKS.map((spark, index) => (
+            <i key={index} className="me-hero-spark" style={{ '--x': `${spark.x}%`, '--s': `${spark.size}px`, '--d': `${spark.dur}s`, '--delay': `${spark.delay}s`, '--dx': `${spark.drift}px` } as React.CSSProperties} />
+          ))}
+        </span>
+        <span className="me-hero-copy">
+          <small>Free to play</small>
+          <b>Daily Freeroll</b>
+          <strong>&amp; Rewards</strong>
+          <span>Buy-in · Freeroll</span>
+        </span>
+      </button>
 
       <div className="me-tiles">
         {FORMAT_TILES.map((tile) => (
