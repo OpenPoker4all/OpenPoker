@@ -13,10 +13,36 @@
 /* Slide 2: capture of the real login screen with live overlays aligned to it. */
 .pres-reveal--stage { container-type: size; }
 .pres-stage { position: relative; width: min(100cqw, calc(100cqh * 1442 / 3122)); aspect-ratio: 1442 / 3122; contain: layout paint; --s: 1; }
-.pres-stage-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.pres-stage .pres-credit { position: absolute; margin: 0; box-sizing: border-box; transform-origin: 0 0; scale: var(--s); }
-.pres-stage .pres-news { position: absolute; inset: 0; padding: 12px; }
+.pres-ambient--login { background-image: url('/assets/login/backdrop.webp'); }
+.pres-stage-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+.pres-stage .pres-credit { position: absolute; z-index: 2; margin: 0; box-sizing: border-box; transform-origin: 0 0; scale: var(--s); }
+.pres-stage .pres-news { position: absolute; inset: 0; padding: 12px; z-index: 3; }
 .pres-stage .cn-card { zoom: var(--s); width: 388px; max-width: none; max-height: none; overflow: visible; }
+
+/* Live effects on the captured "Get the app" card: pulsing glow plus a sheen sweep (transform/opacity only). */
+.pres-stage .pres-app-fx { position: absolute; z-index: 1; margin: 0; pointer-events: none; transform-origin: 0 0; scale: var(--s); border-radius: 16px; }
+.pres-app-glow { position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 22px 2px #ffc64caa, inset 0 0 14px #ffc64c40; animation: pres-glow 3.6s ease-in-out infinite; }
+.pres-app-clip { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; }
+.pres-app-sheen { position: absolute; top: 0; bottom: 0; left: 0; width: 34%; background: linear-gradient(105deg, transparent, #fff3c8a0 50%, transparent);
+  transform: translate3d(-130%, 0, 0) skewX(-18deg); will-change: transform; animation: pres-sheen 4s ease-in-out infinite; }
+@keyframes pres-glow { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+@keyframes pres-sheen { 0%, 45% { transform: translate3d(-130%, 0, 0) skewX(-18deg); } 100% { transform: translate3d(440%, 0, 0) skewX(-18deg); } }
+
+/* The line under DanGG in the pill alternates with a prompt to slide the avatar. */
+.pres-swap { display: grid; }
+.pres-swap > em { grid-area: 1 / 1; font-style: normal; white-space: nowrap; }
+.pres-swap-credit { animation: pres-swap-credit 6s ease-in-out infinite; }
+.pres-swap-hint { color: #ffd46a; font-weight: 800; animation: pres-swap-hint 6s ease-in-out infinite; }
+@keyframes pres-swap-hint { 0% { opacity: 0; transform: translate3d(-10px, 0, 0); } 6%, 40% { opacity: 1; transform: translate3d(0, 0, 0); } 48%, 100% { opacity: 0; transform: translate3d(8px, 0, 0); } }
+@keyframes pres-swap-credit { 0%, 40% { opacity: 0; } 48%, 100% { opacity: 1; } }
+
+/* Nudge toward the yellow star: gentle pulse, expanding ring, and a wiggling star (transform/opacity only). */
+.pres-news .cn-star-button { position: relative; animation: pres-star-pulse 2.2s ease-in-out .7s infinite; }
+.pres-news .cn-star-button::after { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 2px solid #ffe58b; opacity: 0; pointer-events: none; animation: pres-star-ring 2.2s ease-out .7s infinite; }
+.pres-news .cn-star-icon { display: inline-block; transform-origin: 50% 55%; animation: pres-star-wiggle 2.2s ease-in-out .7s infinite; }
+@keyframes pres-star-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes pres-star-ring { 0% { opacity: .9; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.32, 1.5); } }
+@keyframes pres-star-wiggle { 0%, 55%, 100% { transform: rotate(0) scale(1); } 12% { transform: rotate(-18deg) scale(1.3); } 26% { transform: rotate(16deg) scale(1.3); } 40% { transform: rotate(-8deg) scale(1.15); } }
 
 /* Bottom navigation bar: dots plus arrows for desktop. */
 .pres-nav { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: #100516; }
@@ -30,4 +56,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .pres-dots button::after { transition: none; }
+  .pres-app-glow, .pres-app-sheen, .pres-swap-credit, .pres-swap-hint { animation: none; }
+  .pres-news .cn-star-button, .pres-news .cn-star-button::after, .pres-news .cn-star-icon { animation: none; }
+  .pres-swap-hint { display: none; }
 }
