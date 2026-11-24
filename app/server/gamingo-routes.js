@@ -1,6 +1,24 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 const ROOT = '/api/marketplace/gamingo';
 
+const illustratedGames = new Set([
+  'astro-orbit-2099',
+  'casino-island',
+  'emerald-fortune',
+  'exit-wins',
+  'gold-rush-gulch',
+  'kitsune-lanterns',
+  'lucky-pig',
+  'neon-drift',
+  'outback-gold',
+  'pharaohs-final-bet',
+  'pharaohs-pyramid',
+  'rockfall-riches',
+  'shadows-of-the-carpathians',
+  'skyward-bust',
+  'valkyries-thunder',
+]);
+
 export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, platformDemoOwner, funProvider, funJurisdiction, getSetting, setSetting, requireUser, readBody, json }) {
   return async (req, res, url) => {
     const path = url.pathname;
@@ -30,11 +48,8 @@ export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, pl
         }
         if (path.endsWith('/free-play') && req.method === 'GET') {
           const games = installed ? (await funProvider().games(funJurisdiction)).games.filter(g => g.enabled === true && g.maintenance === false)
-            .map(g => {
-              const prefix='https://games.gamingo.partners/img/'+encodeURIComponent(g.game_id);
-              const cover=g.assets?.cover?.url;
-              return {id:g.game_id,title:g.title,...([prefix+'.webp',prefix+'-cover.webp'].includes(cover)?{cover}:{})};
-            }) : [];
+            .map(g => ({id:g.game_id,title:g.title,...(illustratedGames.has(g.game_id)
+              ? {cover:'/assets/gamingo/games/'+g.game_id+'.webp'} : {})})) : [];
           json(res,200,{ installed, organizerInstalled, platformPublished, canManage:mine && ready, games }); return true;
         }
         json(res,403,{error:'Free Play Money preview is unavailable.'}); return true;

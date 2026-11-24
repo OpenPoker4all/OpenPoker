@@ -8,27 +8,27 @@ test('organizer installs for all players; only fun sessions are signed; expiry a
   let member=true, installed=false, user=46, body, status, data, realReply=false;
   const calls=[];
   const provider=createGamingoFunProvider({operatorId:'test',keyId:'key_1234567890abcdef',secret:'test-only',fetchImpl:async(url,init)=>{
-    calls.push([url,init]);return {ok:true,json:async()=>init.method==='POST'?{mode:realReply?'real':'fun',currency:'G',launch_url:'https://games.gamingo.partners/play/example/',embed_url:'https://rgs.gamingo.partners/embed/v1/play?launch=test-only',embedding:{embeddable:true}}:
-    {sandbox:true,test_operator:true,games:[{game_id:'example',title:'Example',enabled:true,maintenance:false,assets:{cover:{url:'https://games.gamingo.partners/img/example.webp'}}}]}};
+    calls.push([url,init]);return {ok:true,json:async()=>init.method==='POST'?{mode:realReply?'real':'fun',currency:'G',launch_url:'https://games.gamingo.partners/play/neon-drift/',embed_url:'https://rgs.gamingo.partners/embed/v1/play?launch=test-only',embedding:{embeddable:true}}:
+    {sandbox:true,test_operator:true,games:[{game_id:'neon-drift',title:'Example',enabled:true,maintenance:false,assets:{cover:{url:'https://games.gamingo.partners/img/example.webp'}}}]}};
   }});
   const fn=createGamingoRoutes({catalogOwner:'46',funJurisdiction:'intl',getSetting:()=>installed,setSetting:(_,v)=>{installed=v},
     funProvider:()=>provider,requireUser:()=>({id:user}),readBody:()=>body,gamingo:{readiness:()=>({organizer_membership_active:member})},json:(_,s,d)=>{status=s;data=d}});
   async function req(id,method,payload,suffix=''){user=id;body=payload;await fn({method},{setHeader(){}},new URL('https://local/api/marketplace/gamingo/free-play'+suffix));return status;}
   assert.equal(await req(12,'PUT',{installed:true}),403);
-  assert.equal(await req(12,'POST',{gameId:'example'},'/launch'),403);
+  assert.equal(await req(12,'POST',{gameId:'neon-drift'},'/launch'),403);
   assert.equal(calls.length,0);
   assert.equal(await req(46,'PUT',{installed:true}),200);
-  assert.equal(await req(12,'GET'),200);assert.deepEqual(data.games,[{id:'example',title:'Example',cover:'https://games.gamingo.partners/img/example.webp'}]);
-  assert.equal(await req(12,'POST',{gameId:'example',mode:'real'},'/launch'),400);
+  assert.equal(await req(12,'GET'),200);assert.deepEqual(data.games,[{id:'neon-drift',title:'Example',cover:'/assets/gamingo/games/neon-drift.webp'}]);
+  assert.equal(await req(12,'POST',{gameId:'neon-drift',mode:'real'},'/launch'),400);
   assert.equal(await req(12,'POST',{gameId:'absent'},'/launch'),404);
-  assert.equal(await req(12,'POST',{gameId:'example'},'/launch'),200);
+  assert.equal(await req(12,'POST',{gameId:'neon-drift'},'/launch'),200);
   assert.deepEqual(data,{embedUrl:'https://rgs.gamingo.partners/embed/v1/play?launch=test-only'});
   const posts=calls.filter(([,i])=>i.method==='POST');assert.equal(posts.length,1);
-  assert.deepEqual(JSON.parse(posts[0][1].body),{player_id:'play-12',game_id:'example',jurisdiction:'intl',mode:'fun',currency:'G'});
+  assert.deepEqual(JSON.parse(posts[0][1].body),{player_id:'play-12',game_id:'neon-drift',jurisdiction:'intl',mode:'fun',currency:'G'});
   assert.ok(calls.every(([u])=>u.startsWith('https://rgs.gamingo.partners/b2b/v1/games?') || u==='https://rgs.gamingo.partners/b2b/v1/sessions'));
-  realReply=true;assert.equal(await req(12,'POST',{gameId:'example'},'/launch'),503);
-  const n=calls.length;member=false;assert.equal(await req(12,'POST',{gameId:'example'},'/launch'),403);
-  member=true;assert.equal(await req(46,'PUT',{installed:false}),200);assert.equal(await req(12,'POST',{gameId:'example'},'/launch'),403);
+  realReply=true;assert.equal(await req(12,'POST',{gameId:'neon-drift'},'/launch'),503);
+  const n=calls.length;member=false;assert.equal(await req(12,'POST',{gameId:'neon-drift'},'/launch'),403);
+  member=true;assert.equal(await req(46,'PUT',{installed:false}),200);assert.equal(await req(12,'POST',{gameId:'neon-drift'},'/launch'),403);
   assert.equal(calls.length,n);
 });
 
