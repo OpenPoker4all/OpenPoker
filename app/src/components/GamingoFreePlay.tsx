@@ -22,9 +22,10 @@ export function GamingoFreePlay({manage=false}:{manage?:boolean}) {
     if(!player||player.open)return;
     const current=++attempt.current;
     setGame({title,src:''});setError('');
+    // Enter fullscreen on the tap, then put the modal above it in the browser's top layer.
+    if(document.fullscreenEnabled){try{await document.documentElement.requestFullscreen()}catch{/* Use the viewport-sized dialog. */}}
+    if(current!==attempt.current || !player.isConnected)return;
     player.showModal();
-    // Request while the original tap is active; the viewport-sized dialog also works on iOS.
-    if(document.fullscreenEnabled)void document.documentElement.requestFullscreen().catch(()=>{});
     try{
       const {embedUrl}=await api.playGamingo(id);
       if(current===attempt.current)setGame({title,src:embedUrl});
