@@ -9,7 +9,7 @@ test('organizer installs for all players; only fun sessions are signed; expiry a
   const calls=[];
   const provider=createGamingoFunProvider({operatorId:'test',keyId:'key_1234567890abcdef',secret:'test-only',fetchImpl:async(url,init)=>{
     calls.push([url,init]);return {ok:true,json:async()=>init.method==='POST'?{mode:realReply?'real':'fun',currency:'G',launch_url:'https://games.gamingo.partners/play/example/',embed_url:'https://rgs.gamingo.partners/embed/v1/play?launch=test-only',embedding:{embeddable:true}}:
-    {sandbox:true,test_operator:true,games:[{game_id:'example',title:'Example',enabled:true,maintenance:false}]}};
+    {sandbox:true,test_operator:true,games:[{game_id:'example',title:'Example',enabled:true,maintenance:false,assets:{cover:{url:'https://games.gamingo.partners/img/example.webp'}}}]}};
   }});
   const fn=createGamingoRoutes({catalogOwner:'46',funJurisdiction:'intl',getSetting:()=>installed,setSetting:(_,v)=>{installed=v},
     funProvider:()=>provider,requireUser:()=>({id:user}),readBody:()=>body,gamingo:{readiness:()=>({organizer_membership_active:member})},json:(_,s,d)=>{status=s;data=d}});
@@ -18,7 +18,7 @@ test('organizer installs for all players; only fun sessions are signed; expiry a
   assert.equal(await req(12,'POST',{gameId:'example'},'/launch'),403);
   assert.equal(calls.length,0);
   assert.equal(await req(46,'PUT',{installed:true}),200);
-  assert.equal(await req(12,'GET'),200);assert.deepEqual(data.games,[{id:'example',title:'Example'}]);
+  assert.equal(await req(12,'GET'),200);assert.deepEqual(data.games,[{id:'example',title:'Example',cover:'https://games.gamingo.partners/img/example.webp'}]);
   assert.equal(await req(12,'POST',{gameId:'example',mode:'real'},'/launch'),400);
   assert.equal(await req(12,'POST',{gameId:'absent'},'/launch'),404);
   assert.equal(await req(12,'POST',{gameId:'example'},'/launch'),200);

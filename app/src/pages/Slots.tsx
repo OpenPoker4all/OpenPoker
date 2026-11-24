@@ -187,12 +187,11 @@ export function Slots() {
     <PageShell activeTop="slots">
       <div className="page slots-page">
         <h1 className="page-title">Slots</h1>
-        {user && <p>Gamingo demos use free demo credits. Paid play with poker club credits is unavailable. <a href="#/cashier?tab=clubs">View club balances and prices in the poker cashier</a></p>}
-        <p className="page-sub">{games.length ? `${games.length} DanGG Originals · play-money only` : 'DanGG Originals · play-money only'}</p>
         <AgeNotice />
-
         {user && <GamingoFreePlay key={user.id} />}
-
+        {user && <p className="page-sub">Cash Chips play is unavailable. <a href="#/cashier?tab=clubs">View club balances</a></p>}
+        <h2>DanGG Originals</h2>
+        <p className="page-sub">{games.length ? `${games.length} games · Play Money` : 'Play Money'}</p>
         <nav className="slots-chips" aria-label="Slot categories">
           {SLOT_CATEGORIES.map((c) => (
             <button
