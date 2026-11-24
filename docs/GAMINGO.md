@@ -34,3 +34,8 @@ deployment, or choose the Gamingo checkbox under Admin → Game settings and sav
 An explicit admin setting overrides the deployment default. Either publication
 requires the assigned organizer's active membership and sandbox jurisdiction.
 This does not grant administrator rights or record consent on the organizer's behalf.
+
+The public demo lobby displays supplier-hosted game covers from the catalog on
+the Gamingo image origin. The Emerald Orbit lobby banner is original artwork
+generated for DanGG with ChatGPT Images. The launch dialog fills the viewport;
+browsers that support native fullscreen are asked to enter it on the player's tap.

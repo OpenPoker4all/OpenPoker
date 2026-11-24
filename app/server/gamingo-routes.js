@@ -30,7 +30,11 @@ export function createGamingoRoutes({ gamingo, catalogOwner, catalogProvider, pl
         }
         if (path.endsWith('/free-play') && req.method === 'GET') {
           const games = installed ? (await funProvider().games(funJurisdiction)).games.filter(g => g.enabled === true && g.maintenance === false)
-            .map(g => ({id:g.game_id,title:g.title})) : [];
+            .map(g => {
+              const prefix='https://games.gamingo.partners/img/'+encodeURIComponent(g.game_id);
+              const cover=g.assets?.cover?.url;
+              return {id:g.game_id,title:g.title,...([prefix+'.webp',prefix+'-cover.webp'].includes(cover)?{cover}:{})};
+            }) : [];
           json(res,200,{ installed, organizerInstalled, platformPublished, canManage:mine && ready, games }); return true;
         }
         json(res,403,{error:'Free Play Money preview is unavailable.'}); return true;
